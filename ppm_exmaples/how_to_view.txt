@@ -1,0 +1,7 @@
+I've been using a software called "feh" to view the ppm files.
+
+While using feh, press up-arrow to zoom in. Once you zoom in far enough
+you will be bale to see the pixels. 
+
+IF the pixels look like a smooth gradient, press SHIFT+A to disable 
+anti-aliasing.

@@ -1,0 +1,12 @@
+P3  #Format
+2 2 #Rows, Columns
+255 #Max rgb int
+
+255   0   0     0  255   0
+  0   0 255     0    0   0
+
+#Expected Output
+#Red,  Green
+#Blue, Black
+
+
