@@ -1,5 +1,9 @@
+
+
+
+
 P3  #Format
-2 2 #Rows, Columns
+2 2 #Columns, Rows
 255 #Max rgb int
 
 255   0   0     0  255   0
