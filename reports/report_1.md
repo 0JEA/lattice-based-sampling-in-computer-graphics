@@ -64,12 +64,12 @@ them so you can easily see their output without having to mess around with feh.
 
 ### `4_pixels.ppm`
 
-Manually made this:
+Manually made this:  
 ![2x2](../ppm_exmaples/outputs/4_pixels_output.png)
 
 ### `5x1.ppm` & `1x5.ppm`
 
-Made these with my `create_ppm.exe`
+Made these with my `create_ppm.exe`  
 ![5x1](../ppm_exmaples/outputs/5x1_output.png)
 ![1x5](../ppm_exmaples/outputs/1x5_output.png)
 
@@ -88,7 +88,7 @@ double green = height > 1 ? double(row) / (height - 1) : 0;
 
 ### `30_pixels.ppm`
 
-Made this by hand:
+Made this by hand:  
 ![5x6](../ppm_exmaples/outputs/30_pixels_output.png)
 
 ### `100x100.ppm`
