@@ -19,12 +19,12 @@ the render sitting beside the plain-text source that produced it.
 
 ## Index of every test image
 
-![feh index showing all five test images with name, size and dimensions](outputs/ppm_tests.png)
+![feh index showing all five test images with name, size and dimensions](outputs/ppm_outputs.png)
 
 Produced with feh's full index mode:
 
 ```sh
-feh -I -W 420 ppm/*.ppm -O outputs/ppm_tests.png
+feh -m -I -e NotoSans-Medium/14 -x -W 550 *.ppm -o ppm_outputs.png
 ```
 
 ## Viewing these locally
