@@ -13,7 +13,7 @@ the render sitting beside the plain-text source that produced it.
 
 ![2x2 render beside its P3 source](outputs/4_pixels_output.png)
 
-## 12_pixels.ppm
+## 30_pixels.ppm
 
 ![5x6 render beside its P3 source](outputs/30_pixels_output.png)
 
