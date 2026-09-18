@@ -15,7 +15,7 @@ the render sitting beside the plain-text source that produced it.
 
 ## 12_pixels.ppm
 
-![5x6 render beside its P3 source](outputs/12_pixels_output.png)
+![5x6 render beside its P3 source](outputs/30_pixels_output.png)
 
 ## Index of every test image
 
