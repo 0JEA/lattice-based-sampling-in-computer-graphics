@@ -149,6 +149,10 @@ inline double dot(const vec3 &u, const vec3 &v) {
 }
 ```
 
+I've likely overthought this, but I was almost convinced to keep using the `inline` keyword. Realistically tho I don't think I have the scale of a large project where this would make a noticeable impact I presume. So I wont be using it and later on if I have time after vulkan in implemented I can play with using inline and measure the gains.
+
+Regardless here's a reputable quote talking about it.:
+
 ### 2.1 What the C++ Core Guidelines say
 
 > **F.5: If a function is very small and time-critical, declare it `inline`**
