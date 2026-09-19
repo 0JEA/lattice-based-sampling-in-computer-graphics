@@ -6,23 +6,12 @@
 #include <string>
 
 #define MSG_FILECREATED "File created: "
+#define MSG_ERROR "ERROR: Could not create or open "
+
 #define FILE_EXTENSION ".ppm"
+#define MAX_RGB 255 // 8 bits per channel
 
-void ppm_write_pixels(std::ostream &output, int width, int height);
-
-inline int file_create_ppm(int width, int height, std::string filename) {
-
-  std::ofstream ppm(filename + FILE_EXTENSION);
-
-  if (ppm.is_open()) {
-    ppm << "P3\n" << width << ' ' << height << "\n" << "255\n";
-    ppm_write_pixels(ppm, width, height);
-  } else {
-    std::cerr << "ERROR: Could not create or open "
-              << filename + FILE_EXTENSION;
-  }
-
-  return 0;
-}
+void ppm_write_pixels(std::ostream& output, int width, int height);
+int file_create_ppm(int width, int height, std::string filename);
 
 #endif
