@@ -1,83 +1,85 @@
-#ifndef VEC3_H
-#define VEC3_H
+#ifndef VECTOR2_H
+#define VECTOR2_H
 
 #include <cmath>
-#include <iostream>
 
-// Decided on just using vector instead of vector3, im not working in 2d, only
-// 3d.
-class vector {
-public:
-  double e[3];
+// Standard vecor type, locked into 3 dimensions.
+struct vector {
+  // Going with a float becuase I'll never need the extra precision.
+  float element[3];
 
-  vector() : e{0, 0, 0} {}
-  vector(double e0, double e1, double e2) : e{e0, e1, e2} {}
+  // Args or not, it gets created wither with zeros or the args.
+  vector() : element{0, 0, 0} {}
+  vector(float element1, float element2, float element3)
+      : element{element1, element2, element3} {}
 
-  double x() const { return e[0]; }
-  double y() const { return e[1]; }
-  double z() const { return e[2]; }
+  // No need for getters, dont see a need to make this a class and have anything
+  // private.
 
-  vector operator-() const { return vector(-e[0], -e[1], -e[2]); }
-  double operator[](int i) const { return e[i]; }
-  double& operator[](int i) { return e[i]; }
-
-  vector& operator+=(const vector& v) {
-    e[0] += v.e[0];
-    e[1] += v.e[1];
-    e[2] += v.e[2];
-    return *this;
+  // Make is so we can do -vec and it negeates.
+  vector operator-() const {
+    return vector(-element[0], -element[1], -element[2]);
   }
 
-  vector& operator*=(double t) {
-    e[0] *= t;
-    e[1] *= t;
-    e[2] *= t;
-    return *this;
-  }
+  float operator[](int i) const { return element[i]; }
+  float& operator[](int i) { return element[i]; }
 
-  vector& operator/=(double t) { return *this *= 1 / t; }
+  // Theres many of the operations I see in the reference online, but I'm not
+  // sure if its better to just copy it all, or not imeplement it until its
+  // needed. Is it lazy to not do now, futureproofing? Overworking overloads?
+  // Not sure, due to my lack of experiance. Thoughts Thibaud?
 
-  double length() const { return std::sqrt(length_squared()); }
-
-  double length_squared() const {
-    return e[0] * e[0] + e[1] * e[1] + e[2] * e[2];
+  // sqrt(a_1^2 + a_2^2 + ... + a_i^2)
+  float length() const {
+    return std::sqrt(element[0] * element[0] + element[1] * element[1] +
+                     element[2] * element[2]);
   }
 };
 
-inline std::ostream& operator<<(std::ostream& out, const vector& v) {
-  return out << v.e[0] << ' ' << v.e[1] << ' ' << v.e[2];
+// I see the use of inline now, this is so we dont need to compile with a .cpp
+// linked and this kind of behaviour still belongs here from what I've read.
+inline vector operator+(const vector& vec1, const vector& vec2) {
+  return vector(vec1.element[0] + vec2.element[0],
+                vec1.element[1] + vec2.element[1],
+                vec1.element[2] + vec2.element[2]);
 }
 
-inline vector operator+(const vector& u, const vector& v) {
-  return vector(u.e[0] + v.e[0], u.e[1] + v.e[1], u.e[2] + v.e[2]);
+inline vector operator-(const vector& vec1, const vector& vec2) {
+  return vector(vec1.element[0] - vec2.element[0],
+                vec1.element[1] - vec2.element[1],
+                vec1.element[2] - vec2.element[2]);
 }
 
-inline vector operator-(const vector& u, const vector& v) {
-  return vector(u.e[0] - v.e[0], u.e[1] - v.e[1], u.e[2] - v.e[2]);
+inline vector operator*(const vector& vec1, const vector& vec2) {
+  return vector(vec1.element[0] * vec2.element[0],
+                vec1.element[1] * vec2.element[1],
+                vec1.element[2] * vec2.element[2]);
 }
 
-inline vector operator*(const vector& u, const vector& v) {
-  return vector(u.e[0] * v.e[0], u.e[1] * v.e[1], u.e[2] * v.e[2]);
+inline vector operator*(const vector& vec, float scalar) {
+  return vector(vec.element[0] * scalar, vec.element[1] * scalar,
+                vec.element[2] * scalar);
 }
 
-inline vector operator*(double t, const vector& v) {
-  return vector(t * v.e[0], t * v.e[1], t * v.e[2]);
+inline vector operator*(float scalar, const vector& vec) {
+  return vec * scalar;
 }
 
-inline vector operator*(const vector& v, double t) { return t * v; }
-
-inline vector operator/(const vector& v, double t) { return (1 / t) * v; }
-
-inline double dot(const vector& u, const vector& v) {
-  return u.e[0] * v.e[0] + u.e[1] * v.e[1] + u.e[2] * v.e[2];
+inline vector operator/(const vector& vec, float scalar) {
+  return vec * (1.0f / scalar);
 }
 
-inline vector cross(const vector& u, const vector& v) {
-  return vector(u.e[1] * v.e[2] - u.e[2] * v.e[1],
-                u.e[2] * v.e[0] - u.e[0] * v.e[2],
-                u.e[0] * v.e[1] - u.e[1] * v.e[0]);
+// dot product: a · b = Sum(a_i * b_i)
+inline float dot(const vector& a, const vector& b) {
+  return (a[0] * b[0]) + (a[1] * b[1]) + (a[2] * b[2]);
 }
 
-inline vector unit_vectortor(const vector& v) { return v / v.length(); }
+// cross product, gives a vector orthogonal to the others.
+inline vector cross(const vector& a, const vector& b) {
+  return vector(a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2],
+                a[0] * b[1] - a[1] * b[0]);
+}
+
+inline vector unit_vector(const vector& v) { return v / v.length(); }
 
 #endif
