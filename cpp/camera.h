@@ -2,7 +2,7 @@
 #define CAMERA_H
 
 #include "ray.h"
-#include "vec3.h"
+#include "vector.h"
 
 #define ASPECT_RATIO (16.0 / 9.0)
 #define FOCAL_LENGTH 1.0
@@ -21,14 +21,14 @@ public:
     auto viewport_height = VIEWPORT_HEIGHT;
     auto viewport_width = viewport_height * (double(width) / height);
 
-    auto viewport_u = vec3(viewport_width, 0, 0);
-    auto viewport_v = vec3(0, -viewport_height, 0);
+    auto viewport_u = vector(viewport_width, 0, 0);
+    auto viewport_v = vector(0, -viewport_height, 0);
 
     pixel_delta_u = viewport_u / width;
     pixel_delta_v = viewport_v / height;
 
     auto viewport_upper_left =
-        center - vec3(0, 0, FOCAL_LENGTH) - viewport_u / 2 - viewport_v / 2;
+        center - vector(0, 0, FOCAL_LENGTH) - viewport_u / 2 - viewport_v / 2;
     pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
   }
 
@@ -42,8 +42,8 @@ public:
 private:
   point3 center;
   point3 pixel00_loc;
-  vec3 pixel_delta_u;
-  vec3 pixel_delta_v;
+  vector pixel_delta_u;
+  vector pixel_delta_v;
 };
 
 #endif
