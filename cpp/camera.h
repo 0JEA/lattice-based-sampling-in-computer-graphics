@@ -16,7 +16,7 @@ public:
   }
 
   camera(int width, int height) {
-    center = point3(0, 0, 0);
+    center = vector(0, 0, 0);
 
     auto viewport_height = VIEWPORT_HEIGHT;
     auto viewport_width = viewport_height * (double(width) / height);
@@ -40,8 +40,8 @@ public:
   }
 
 private:
-  point3 center;
-  point3 pixel00_loc;
+  vector center;
+  vector pixel00_loc;
   vector pixel_delta_u;
   vector pixel_delta_v;
 };
