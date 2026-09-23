@@ -20,7 +20,8 @@ void ppm_write_pixels(std::ostream &output, int width, int height) {
 
   for (int row = 0; row < height; ++row) {
     for (int column = 0; column < width; ++column) {
-      write_color(output, ray_color(cam.get_ray(column, row)));
+      color pixel = ray_color(cam.get_ray(column, row));
+      write_color(output, pixel[0], pixel[1], pixel[2]);
     }
   }
 }

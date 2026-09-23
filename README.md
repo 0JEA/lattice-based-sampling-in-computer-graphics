@@ -16,10 +16,11 @@
 ## Contents
 
 1. [PPM files (portable pixmaps)](#1-ppm-files-portable-pixmaps)
-2. [The `inline` keyword in the `vec3` class](#2-the-inline-keyword-in-the-vec3-class)
-3. Quantizing
-4. [Rays and Spheres](#3-rays-and-spheres)
-5. [References](#references)
+2. [Quantizing Colors](#2-quantizing-colors)
+3. [The `inline` keyword in the `vec3` class](#3-the-inline-keyword-in-the-vec3-class)
+4. [Rays and Spheres](#4-rays-and-spheres)
+5. [Makefile and Folder Structuring](#5-makefile-and-folder-structuring)
+6. [References](#references)
 
 ---
 
@@ -55,11 +56,11 @@ P3
 
 ### 1.2 Where the example files live
 
-| Path                                                | Contents                                        |
-| --------------------------------------------------- | ----------------------------------------------- |
-| [`ppm_exmaples/src/`](../ppm_exmaples/src/)         | `create_ppm.cpp`, the generator                 |
-| [`ppm_exmaples/ppm/`](../ppm_exmaples/ppm/)         | the generated `.ppm` images, plus viewing notes |
-| [`ppm_exmaples/outputs/`](../ppm_exmaples/outputs/) | PNG captures of how those images render         |
+| Path                           | Contents                                    |
+| ------------------------------ | ------------------------------------------- |
+| [`src/`](src/)                 | the source code, including `create_ppm.cpp` |
+| [`renders/ppm/`](renders/ppm/) | the `.ppm` images, plus viewing notes       |
+| [`renders/`](renders/)         | PNG captures of how those images render     |
 
 GitHub cannot display `.ppm` files, so every image below is a PNG screenshot of
 them so you can easily see their output without having to mess around with feh.
@@ -67,13 +68,13 @@ them so you can easily see their output without having to mess around with feh.
 ### 1.3 `4_pixels.ppm`
 
 Manually made this:  
-![2x2](ppm_exmaples/outputs/4_pixels_output.png)
+![2x2](renders/4_pixels_output.png)
 
 ### 1.4 `5x1.ppm` & `1x5.ppm`
 
 Made these with my `create_ppm.exe`  
-![5x1](ppm_exmaples/outputs/5x1_output.png)
-![1x5](ppm_exmaples/outputs/1x5_output.png)
+![5x1](renders/5x1_output.png)
+![1x5](renders/1x5_output.png)
 
 These two made me notice a bug in the [_Ray Tracing in One Weekend_](https://raytracing.github.io/books/RayTracingInOneWeekend.html) code section
 2.3 where if the row or column is 1 or less there is a division by zero.
@@ -91,16 +92,16 @@ double green = height > 1 ? double(row) / (height - 1) : 0;
 ### 1.5 `30_pixels.ppm`
 
 Made this by hand:  
-![5x6](ppm_exmaples/outputs/30_pixels_output.png)
+![5x6](renders/30_pixels_output.png)
 
 ### 1.6 `100x100.ppm`
 
 Made this with my `create_ppm.exe`
-![100x100](ppm_exmaples/outputs/100x100_output.png)
+![100x100](renders/100x100_output.png)
 
 ### 1.7 Index of every test image
 
-![feh index](ppm_exmaples/outputs/ppm_outputs.png)
+![feh index](renders/ppm_outputs.png)
 
 This seems like a awesome way to show and compare many images so I'll likely be
 using this along the project.
@@ -113,16 +114,93 @@ feh -m -I -e NotoSans-Medium/14 -x -W 550 *.ppm -o ppm_outputs.png
 
 ### 1.8 Viewing these locally
 
-See [`ppm_exmaples/ppm/how_to_view.txt`](../ppm_exmaples/ppm/how_to_view.txt).
+See [`renders/ppm/how_to_view_ppm.txt`](renders/ppm/how_to_view_ppm.txt).
 In short: open the file with `feh`, press the up arrow to zoom in until
 individual pixels are visible, and press `SHIFT+A` to toggle anti-aliasing off
 if the pixels look like a smooth gradient instead of hard-edged blocks.
 
-### 1.9 Quantizing Colors
+## 2. Quantizing Colors
+
+- [Wikipedia: Quantization](<https://en.wikipedia.org/wiki/Quantization_(signal_processing)>)
+
+Every color we output now will be quantized to 8 bits per channel.  
+I still need to add in boundary checking for this, but I now understand what  
+this code now does. Even with a comment it didn't make any sense to me to start.
+
+```cpp
+void write_color(std::ostream &output, double red, double green, double blue) {
+  int red_byte = int(255.999 * red);
+  int green_byte = int(255.999 * green);
+  int blue_byte = int(255.999 * blue);
+
+  output << red_byte << ' ' << green_byte << ' ' << blue_byte << '\n';
+}
+```
+
+### 2.1 What an 8 bit channel is
+
+Every pixel's color is three numbers: how much red, green and blue. Each of
+those numbers is called a **channel**.
+
+A channel is stored as a whole number, and "8 bit" says how many bits it gets.
+With 8 bits there are $2^8 = 256$ possible values, so a channel can be any
+integer from $0$ (none of that color) to $255$ (all of it). Three channels gives
+$256^3 \approx 16.7$ million colors.
+
+Since I'm writing plain `P3`, the numbers are
+stored as text, so here "8 bit" describes how many levels a channel has, not how
+much space it takes on disk.
+
+### 2.2 Why not just work in 0 to 255
+
+The problem is that working with only integers makes blending colors, creating
+gradients and doing arithmetic on colors a pain. Multiplying two half-bright
+colors should give a quarter-bright one, but $127 \cdot 127 = 16129$, which
+means nothing.
+
+Thus we move to real numbers $\mathbb{R}$. But if red can be any
+$x \in \mathbb{R}$, it could be $400$ or $-30$, and neither makes sense as an
+amount of color. So each channel must be in the interval $[0, 1]$, where $0$ is
+none of that color and $1$ is all of it.
+
+Now multiplying two channels always gives another valid channel. If $a$ and
+$b$ are both in $[0, 1]$, then multiplying $b$ by $a$ can only shrink it or
+leave it the same, never grow it, because $a$ is at most $1$:
+
+$$
+0 \le a \cdot b \le b \le 1
+$$
+
+$$
+0.5 \cdot 0.5 = 0.25
+$$
+
+### 2.3 Converting back to 0 to 255
+
+The renderer works in $[0, 1]$, and only when writing the file
+does it convert to the 0 to 255 scale:
+
+$$
+\text{channel} = \lfloor 255.999 \cdot x \rfloor
+$$
+
+1. Multiply by $255.999$. This stretches $[0, 1]$ to $[0, 255.999]$.
+2. Floor round, which `int()` does by dropping the decimals.
+
+For example, half red: $255.999 \cdot 0.5 = 127.9995$, and `int()` will make it
+$127$.
+
+Why $255.999$ and not $255$ or $256$? Because step 2 always rounds down:
+
+- $256$ would split $[0, 1]$ into 256 equal slices, one per value, but $x = 1$
+  gives exactly $256$, which is out of range.
+- $255$ would only ever give $255$ when $x$ is exactly $1$, so the top value
+  almost never gets used.
+- $255.999$ keeps the slices nearly equal and still lands $x = 1$ on $255$.
 
 ---
 
-## 2. The `inline` keyword in the `vec3` class
+## 3. The `inline` keyword in the `vec3` class
 
 - [cppreference: `inline` specifier](https://en.cppreference.com/cpp/language/inline)
 
@@ -174,9 +252,9 @@ Regardless here's a reputable quote talking about it:
 
 Source: [C++ Core Guidelines, F.5](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#f5-if-a-function-is-very-small-and-time-critical-declare-it-inline)
 
-## 3. Rays and Spheres
+## 4. Rays and Spheres
 
-### 3.1 A sphere at the origin
+### 4.1 A sphere at the origin
 
 A sphere centered at the origin of radius $r$ is:
 
@@ -188,7 +266,7 @@ x^2 + y^2 + z^2 &\gt r^2 && \text{outside the sphere}
 \end{aligned}
 $$
 
-### 3.2 A sphere at any center
+### 4.2 A sphere at any center
 
 To center the sphere at any point $(C_x, C_y, C_z)$:
 
@@ -200,7 +278,7 @@ $$
 \end{aligned}
 $$
 
-### 3.3 The same test with vectors
+### 4.3 The same test with vectors
 
 Let
 
@@ -224,7 +302,7 @@ $$
 \;}
 $$
 
-### 3.4 Rays
+### 4.4 Rays
 
 Now we introduce a Ray, some Ray of light that travels in a straight linear
 line. It starts at an origin $\mathbf{R}$ and travels in a direction
@@ -236,7 +314,35 @@ $$
 \boxed{\mathbf{P}(t) = \mathbf{R} + t\,\mathbf{d}}
 $$
 
-### 3.5 Examples
+**Sky:** blends white to blue by how far up each ray points.  
+![ray sky](renders/ray_sky.png)
+
+**Floor:** a solid floor at $y = -1$, sky wherever a ray misses it.  
+![ray floor solid](renders/ray_floor_solid.png)
+
+**Checkerboard:** the floor color flips every 1 unit along $x$ and $z$.  
+![ray floor checkerboard](renders/ray_floor.png)
+
+---
+
+## 5. Makefile and Folder Structuring
+
+Now that the codebase is getting some size, I've moved to a Makefile and a
+proper folder layout. Compiling everything by hand with one long `g++` line was
+getting annoying, and `make` only rebuilds the files that actually changed.
+
+From what I can see, this is about the normal structure for a small C++
+project:
+
+```
+src/       .h and .cpp files together
+build/     .o files and the programs (gitignored)
+renders/   output images
+reports/
+```
+
+Build with `make`, run with `./build/camera_testing.exe`, and clean up with
+`make clean`.
 
 ---
 
@@ -248,3 +354,4 @@ $$
 - `man 5 ppm`, the plain PPM (`P3`) specification
 - [Wikipedia: Sphere](https://en.wikipedia.org/wiki/Sphere)
 - [Wikipedia: Quantization](<https://en.wikipedia.org/wiki/Quantization_(signal_processing)>)
+- [Gnu: Make](https://www.gnu.org/software/make/manual/make.html)

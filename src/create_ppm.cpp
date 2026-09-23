@@ -24,7 +24,7 @@ void ppm_write_pixels(std::ostream &output, int width, int height) {
       double green = height > 1 ? double(row) / (height - 1) : 0;
       double blue = 0.0;
 
-      write_color(output, color(red, green, blue));
+      write_color(output, red, green, blue);
     }
   }
 }
