@@ -17,7 +17,9 @@
 
 1. [PPM files (portable pixmaps)](#1-ppm-files-portable-pixmaps)
 2. [The `inline` keyword in the `vec3` class](#2-the-inline-keyword-in-the-vec3-class)
-3. [References](#references)
+3. Quantizing
+4. [Rays and Spheres](#3-rays-and-spheres)
+5. [References](#references)
 
 ---
 
@@ -62,12 +64,12 @@ P3
 GitHub cannot display `.ppm` files, so every image below is a PNG screenshot of
 them so you can easily see their output without having to mess around with feh.
 
-### `4_pixels.ppm`
+### 1.3 `4_pixels.ppm`
 
 Manually made this:  
 ![2x2](ppm_exmaples/outputs/4_pixels_output.png)
 
-### `5x1.ppm` & `1x5.ppm`
+### 1.4 `5x1.ppm` & `1x5.ppm`
 
 Made these with my `create_ppm.exe`  
 ![5x1](ppm_exmaples/outputs/5x1_output.png)
@@ -86,17 +88,17 @@ double red = width > 1 ? double(column) / (width - 1) : 0;
 double green = height > 1 ? double(row) / (height - 1) : 0;
 ```
 
-### `30_pixels.ppm`
+### 1.5 `30_pixels.ppm`
 
 Made this by hand:  
 ![5x6](ppm_exmaples/outputs/30_pixels_output.png)
 
-### `100x100.ppm`
+### 1.6 `100x100.ppm`
 
 Made this with my `create_ppm.exe`
 ![100x100](ppm_exmaples/outputs/100x100_output.png)
 
-### 1.8 Index of every test image
+### 1.7 Index of every test image
 
 ![feh index](ppm_exmaples/outputs/ppm_outputs.png)
 
@@ -109,12 +111,14 @@ Produced with feh's full index mode:
 feh -m -I -e NotoSans-Medium/14 -x -W 550 *.ppm -o ppm_outputs.png
 ```
 
-### 1.9 Viewing these locally
+### 1.8 Viewing these locally
 
 See [`ppm_exmaples/ppm/how_to_view.txt`](../ppm_exmaples/ppm/how_to_view.txt).
 In short: open the file with `feh`, press the up arrow to zoom in until
 individual pixels are visible, and press `SHIFT+A` to toggle anti-aliasing off
 if the pixels look like a smooth gradient instead of hard-edged blocks.
+
+### 1.9 Quantizing Colors
 
 ---
 
@@ -170,6 +174,70 @@ Regardless here's a reputable quote talking about it:
 
 Source: [C++ Core Guidelines, F.5](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#f5-if-a-function-is-very-small-and-time-critical-declare-it-inline)
 
+## 3. Rays and Spheres
+
+### 3.1 A sphere at the origin
+
+A sphere centered at the origin of radius $r$ is:
+
+$$
+\begin{aligned}
+x^2 + y^2 + z^2 &= r^2 && \text{on the sphere's surface} \\
+x^2 + y^2 + z^2 &\lt r^2 && \text{inside the sphere} \\
+x^2 + y^2 + z^2 &\gt r^2 && \text{outside the sphere}
+\end{aligned}
+$$
+
+### 3.2 A sphere at any center
+
+To center the sphere at any point $(C_x, C_y, C_z)$:
+
+$$
+\begin{aligned}
+(C_x - x)^2 + (C_y - y)^2 + (C_z - z)^2 &= r^2 && \text{on the sphere's surface} \\
+(C_x - x)^2 + (C_y - y)^2 + (C_z - z)^2 &\lt r^2 && \text{inside the sphere} \\
+(C_x - x)^2 + (C_y - y)^2 + (C_z - z)^2 &\gt r^2 && \text{outside the sphere}
+\end{aligned}
+$$
+
+### 3.3 The same test with vectors
+
+Let
+
+$$
+\begin{aligned}
+\mathbf{C} &= (C_x, C_y, C_z) && \text{the center} \\
+\mathbf{P} &= (x, y, z) && \text{the selected point} \\
+\mathbf{M} &= \mathbf{P} - \mathbf{C} && \text{the movement vector, from center to point}
+\end{aligned}
+$$
+
+Now using dot:
+
+$$
+\boxed{\;
+\begin{aligned}
+\mathbf{M} \cdot \mathbf{M} &= r^2 && \text{on the sphere's surface} \\
+\mathbf{M} \cdot \mathbf{M} &\lt r^2 && \text{inside the sphere at some point } \mathbf{P} \\
+\mathbf{M} \cdot \mathbf{M} &\gt r^2 && \text{outside the sphere at some point } \mathbf{P}
+\end{aligned}
+\;}
+$$
+
+### 3.4 Rays
+
+Now we introduce a Ray, some Ray of light that travels in a straight linear
+line. It starts at an origin $\mathbf{R}$ and travels in a direction
+$\mathbf{d}$, which is the vector part.
+
+We can find any point along that line of light with a simple function:
+
+$$
+\boxed{\mathbf{P}(t) = \mathbf{R} + t\,\mathbf{d}}
+$$
+
+### 3.5 Examples
+
 ---
 
 ## References
@@ -178,3 +246,5 @@ Source: [C++ Core Guidelines, F.5](https://isocpp.github.io/CppCoreGuidelines/Cp
 - [C++ Core Guidelines, F.5: If a function is very small and time-critical, declare it `inline`](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#f5-if-a-function-is-very-small-and-time-critical-declare-it-inline)
 - [cppreference: `inline` specifier](https://en.cppreference.com/cpp/language/inline)
 - `man 5 ppm`, the plain PPM (`P3`) specification
+- [Wikipedia: Sphere](https://en.wikipedia.org/wiki/Sphere)
+- [Wikipedia: Quantization](<https://en.wikipedia.org/wiki/Quantization_(signal_processing)>)
