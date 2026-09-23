@@ -4,24 +4,13 @@
 // A better implementation will later be created that includes header files and
 // proper error checking and docs.
 
+#include "color.h"
 #include "input.h"
 #include "ppm.h"
 #include <iostream>
 #include <string>
 
 #define MSG_WELCOME "Basic PPM File Creator"
-
-// Copied directly from the ray tracing in a weekend. I intend to explore
-// whats happening here in more detail at a later time.
-//
-// Seems to be related to rgb of 255 vs 256.
-void write_color(std::ostream &output, double red, double green, double blue) {
-  int red_byte = int(255.999 * red);
-  int green_byte = int(255.999 * green);
-  int blue_byte = int(255.999 * blue);
-
-  output << red_byte << ' ' << green_byte << ' ' << blue_byte << '\n';
-}
 
 // Also basically copied from the ray tracing in a weekend.
 //
@@ -35,7 +24,7 @@ void ppm_write_pixels(std::ostream &output, int width, int height) {
       double green = height > 1 ? double(row) / (height - 1) : 0;
       double blue = 0.0;
 
-      write_color(output, red, green, blue);
+      write_color(output, color(red, green, blue));
     }
   }
 }
