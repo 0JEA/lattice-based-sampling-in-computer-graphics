@@ -1,8 +1,7 @@
-# Report 1:
+# Live Report.
 
-|                 |                                                                                                                                                        |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **Course**      | AUCSC 395, Directed Reading 1                                                                                                                          |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **Institution** | University of Alberta, Augustana Campus                                                                                                                |
 | **Professor**   | [Dr. Thibaud Lutellier](https://apps.ualberta.ca/directory/person/lutellie) ([Google Scholar](https://scholar.google.com/citations?user=bQECG60AAAAJ)) |
 | **Student**     | Johnothan Andres                                                                                                                                       |
@@ -20,7 +19,8 @@
 3. [The `inline` keyword in the `vec3` class](#3-the-inline-keyword-in-the-vec3-class)
 4. [Rays and Spheres](#4-rays-and-spheres)
 5. [Makefile and Folder Structuring](#5-makefile-and-folder-structuring)
-6. [References](#references)
+6. [My Claude Usage](#6-claude-usage-stat)
+7. [References](#references)
 
 ---
 
@@ -54,27 +54,16 @@ P3
 255 0 0
 ```
 
-### 1.2 Where the example files live
-
-| Path                           | Contents                                    |
-| ------------------------------ | ------------------------------------------- |
-| [`src/`](src/)                 | the source code, including `create_ppm.cpp` |
-| [`renders/ppm/`](renders/ppm/) | the `.ppm` images, plus viewing notes       |
-| [`renders/`](renders/)         | PNG captures of how those images render     |
-
-GitHub cannot display `.ppm` files, so every image below is a PNG screenshot of
-them so you can easily see their output without having to mess around with feh.
-
-### 1.3 `4_pixels.ppm`
+### 1.2 `4_pixels.ppm`
 
 Manually made this:  
-![2x2](renders/4_pixels_output.png)
+![2x2](renders/ppm/4_pixels_output.png)
 
-### 1.4 `5x1.ppm` & `1x5.ppm`
+### 1.3 `5x1.ppm` & `1x5.ppm`
 
 Made these with my `create_ppm.exe`  
-![5x1](renders/5x1_output.png)
-![1x5](renders/1x5_output.png)
+![5x1](renders/ppm/5x1_output.png)
+![1x5](renders/ppm/1x5_output.png)
 
 These two made me notice a bug in the [_Ray Tracing in One Weekend_](https://raytracing.github.io/books/RayTracingInOneWeekend.html) code section
 2.3 where if the row or column is 1 or less there is a division by zero.
@@ -89,19 +78,19 @@ double red = width > 1 ? double(column) / (width - 1) : 0;
 double green = height > 1 ? double(row) / (height - 1) : 0;
 ```
 
-### 1.5 `30_pixels.ppm`
+### 1.4 `30_pixels.ppm`
 
 Made this by hand:  
-![5x6](renders/30_pixels_output.png)
+![5x6](renders/ppm/30_pixels_output.png)
 
-### 1.6 `100x100.ppm`
+### 1.5 `100x100.ppm`
 
 Made this with my `create_ppm.exe`
-![100x100](renders/100x100_output.png)
+![100x100](renders/ppm/100x100_output.png)
 
-### 1.7 Index of every test image
+### 1.6 Index of every test image
 
-![feh index](renders/ppm_outputs.png)
+![feh index](renders/ppm/ppm_outputs.png)
 
 This seems like a awesome way to show and compare many images so I'll likely be
 using this along the project.
@@ -112,7 +101,7 @@ Produced with feh's full index mode:
 feh -m -I -e NotoSans-Medium/14 -x -W 550 *.ppm -o ppm_outputs.png
 ```
 
-### 1.8 Viewing these locally
+### 1.7 Viewing these locally
 
 See [`renders/ppm/how_to_view_ppm.txt`](renders/ppm/how_to_view_ppm.txt).
 In short: open the file with `feh`, press the up arrow to zoom in until
@@ -314,14 +303,14 @@ $$
 \boxed{\mathbf{P}(t) = \mathbf{R} + t\,\mathbf{d}}
 $$
 
-**Sky:** blends white to blue by how far up each ray points.  
-![ray sky](renders/ray_sky.png)
-
-**Floor:** a solid floor at $y = -1$, sky wherever a ray misses it.  
-![ray floor solid](renders/ray_floor_solid.png)
-
-**Checkerboard:** the floor color flips every 1 unit along $x$ and $z$.  
-![ray floor checkerboard](renders/ray_floor.png)
+| Exmaple                                                                 | Code |
+| ----------------------------------------------------------------------- | ---- |
+| **Sky:** blends white to blue by how far up each ray points.            |
+| ![ray sky](renders/ray_sky.png)                                         |
+| **Floor:** a solid floor at $y = -1$, sky wherever a ray misses it.     |
+| ![ray floor solid](renders/ray_floor_solid.png)                         |
+| **Checkerboard:** the floor color flips every 1 unit along $x$ and $z$. |
+| ![ray floor checkerboard](renders/ray_floor.png)                        |
 
 ---
 
@@ -344,7 +333,19 @@ reports/
 Build with `make`, run with `./build/camera_testing.exe`, and clean up with
 `make clean`.
 
----
+## 6. Claude Usage Stat.
+
+I'm not sure how well I'm using agents to learn, I try to be relatively concious
+about its usage, but over the last hour I've asked a lot of questions. Whether
+that helps my learning as much as not asking and just struggling with the topics
+I'm not sure. I thought I would share with you small usage stats over the last
+hour.
+
+| Topics                                                                                         | # of questions |
+| ---------------------------------------------------------------------------------------------- | -------------- |
+| C++ language (class/struct, invariants, private/const, static, .h/.cpp, helpers, float/double) | 11             |
+| The camera model (position, window, world, painting, moving things)                            | 9              |
+| Names, definitons, convensions, what values mean/translate too.                                | 7              |
 
 ## References
 
