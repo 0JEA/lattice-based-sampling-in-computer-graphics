@@ -1,6 +1,6 @@
 # Live Report.
 
-| **Course**      | AUCSC 395, Directed Reading 1                                                                                                                          |
+| **Course**      | AUCSC 395, Directed Study 1                                                                                                                            |
 | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **Institution** | University of Alberta, Augustana Campus                                                                                                                |
 | **Professor**   | [Dr. Thibaud Lutellier](https://apps.ualberta.ca/directory/person/lutellie) ([Google Scholar](https://scholar.google.com/citations?user=bQECG60AAAAJ)) |
@@ -340,6 +340,8 @@ about its usage, but over the last hour I've asked a lot of questions. Whether
 that helps my learning as much as not asking and just struggling with the topics
 I'm not sure. I thought I would share with you small usage stats over the last
 hour.
+
+**If you have any feedback please share.**
 
 | Topics                                                                                         | # of questions |
 | ---------------------------------------------------------------------------------------------- | -------------- |
