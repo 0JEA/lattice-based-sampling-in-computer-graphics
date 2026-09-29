@@ -7,6 +7,8 @@
 
 using color = vector;
 
-void write_color(std::ostream &output, double red, double green, double blue);
+#define MAX_RGB 255 // 8 bits per channel
+
+void write_color(std::ostream &output, float red, float green, float blue);
 
 #endif

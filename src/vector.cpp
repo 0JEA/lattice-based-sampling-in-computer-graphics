@@ -1,34 +1,30 @@
 #include "vector.h"
 
-vector operator+(const vector& vec1, const vector& vec2) {
-  return vector(vec1.element[0] + vec2.element[0],
-                vec1.element[1] + vec2.element[1],
-                vec1.element[2] + vec2.element[2]);
+vector operator+(const vector& a, const vector& b) {
+  return vector(a.element[0] + b.element[0], a.element[1] + b.element[1],
+                a.element[2] + b.element[2]);
 }
 
-vector operator-(const vector& vec1, const vector& vec2) {
-  return vector(vec1.element[0] - vec2.element[0],
-                vec1.element[1] - vec2.element[1],
-                vec1.element[2] - vec2.element[2]);
+vector operator-(const vector& a, const vector& b) {
+  return vector(a.element[0] - b.element[0], a.element[1] - b.element[1],
+                a.element[2] - b.element[2]);
 }
 
-vector operator*(const vector& vec1, const vector& vec2) {
-  return vector(vec1.element[0] * vec2.element[0],
-                vec1.element[1] * vec2.element[1],
-                vec1.element[2] * vec2.element[2]);
+// Element by element, not a dot or cross product.
+vector operator*(const vector& a, const vector& b) {
+  return vector(a.element[0] * b.element[0], a.element[1] * b.element[1],
+                a.element[2] * b.element[2]);
 }
 
-vector operator*(const vector& vec, float scalar) {
-  return vector(vec.element[0] * scalar, vec.element[1] * scalar,
-                vec.element[2] * scalar);
+vector operator*(const vector& v, float scalar) {
+  return vector(v.element[0] * scalar, v.element[1] * scalar,
+                v.element[2] * scalar);
 }
 
-vector operator*(float scalar, const vector& vec) {
-  return vec * scalar;
-}
+vector operator*(float scalar, const vector& v) { return v * scalar; }
 
-vector operator/(const vector& vec, float scalar) {
-  return vec * (1.0f / scalar);
+vector operator/(const vector& v, float scalar) {
+  return v * (1.0f / scalar);
 }
 
 // dot product: a · b = Sum(a_i * b_i)

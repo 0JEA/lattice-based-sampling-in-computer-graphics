@@ -10,11 +10,11 @@ type, by making it a class with private data members and getters. Perhaps ill
 run into the reason further in. For now this is much more simple.
  */
 
-// point_at is a simple member function that returns a point along the ray.
+// point_at returns the point a distance t along the ray.
 struct ray {
   vector origin;
   vector direction;
-  vector point_at(double x) const { return origin + x * direction; }
+  vector point_at(float t) const { return origin + t * direction; }
 };
 
 #endif

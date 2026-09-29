@@ -1,5 +1,5 @@
-#ifndef VECTOR2_H
-#define VECTOR2_H
+#ifndef VECTOR_H
+#define VECTOR_H
 
 #include <cmath>
 
@@ -24,6 +24,11 @@ struct vector {
   float operator[](int i) const { return element[i]; }
   float& operator[](int i) { return element[i]; }
 
+  // Named access, so code can say v.y() instead of v[1].
+  float x() const { return element[0]; }
+  float y() const { return element[1]; }
+  float z() const { return element[2]; }
+
   // Theres many of the operations I see in the reference online, but I'm not
   // sure if its better to just copy it all, or not imeplement it until its
   // needed. Is it lazy to not do now, futureproofing? Overworking overloads?
@@ -36,12 +41,14 @@ struct vector {
   }
 };
 
-vector operator+(const vector& vec1, const vector& vec2);
-vector operator-(const vector& vec1, const vector& vec2);
-vector operator*(const vector& vec1, const vector& vec2);
-vector operator*(const vector& vec, float scalar);
-vector operator*(float scalar, const vector& vec);
-vector operator/(const vector& vec, float scalar);
+vector operator+(const vector& a, const vector& b);
+vector operator-(const vector& a, const vector& b);
+// Multiplies element by element: (a_1*b_1, a_2*b_2, a_3*b_3).
+// Not a dot or cross product. Mostly used for tinting colors.
+vector operator*(const vector& a, const vector& b);
+vector operator*(const vector& v, float scalar);
+vector operator*(float scalar, const vector& v);
+vector operator/(const vector& v, float scalar);
 
 // dot product: a · b = Sum(a_i * b_i)
 float dot(const vector& a, const vector& b);

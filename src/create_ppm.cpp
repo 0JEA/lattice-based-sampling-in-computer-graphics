@@ -9,6 +9,7 @@
 #include "ppm.h"
 #include <iostream>
 #include <string>
+#include <vector>
 
 #define MSG_WELCOME "Basic PPM File Creator"
 
@@ -17,16 +18,19 @@
 // Do note the width > 1 ? ... : 0
 // This was to fix a bug I found that would happen when the height or width
 // was only 1. The issue is division by zero.
-void ppm_write_pixels(std::ostream &output, int width, int height) {
+std::vector<color> gradient(int width, int height) {
+  std::vector<color> pixels;
+
   for (int row = 0; row < height; ++row) {
     for (int column = 0; column < width; ++column) {
-      double red = width > 1 ? double(column) / (width - 1) : 0;
-      double green = height > 1 ? double(row) / (height - 1) : 0;
-      double blue = 0.0;
+      float red = width > 1 ? float(column) / (width - 1) : 0.0f;
+      float green = height > 1 ? float(row) / (height - 1) : 0.0f;
+      float blue = 0.0f;
 
-      write_color(output, red, green, blue);
+      pixels.push_back(color(red, green, blue));
     }
   }
+  return pixels;
 }
 
 int main() {
@@ -36,6 +40,8 @@ int main() {
   int height = get_input<int>(MSG_HEIGHT);
   std::string filename = get_input<std::string>(MSG_FILENAME);
 
-  file_create_ppm(width, height, filename);
+  if (!file_create_ppm(width, height, filename, gradient(width, height))) {
+    return 1;
+  }
   std::cout << MSG_FILECREATED + filename + FILE_EXTENSION << "\n";
 }

@@ -4,46 +4,40 @@
 #include "ray.h"
 #include "vector.h"
 
-#define ASPECT_RATIO (16.0 / 9.0)
-#define FOCAL_LENGTH 1.0
-#define VIEWPORT_HEIGHT 2.0
+// NOTE: World units are all in type float, pixel units are all int.
 
 class camera {
 public:
-  static int height_for(int width) {
-    int height = int(width / ASPECT_RATIO);
-    return (height < 1) ? 1 : height;
-  }
+  camera();
+  camera(int resolution_width, int resolution_height);
+  camera(int resolution_width, int resolution_height, float focal_length,
+         float sensor_height);
 
-  camera(int width, int height) {
-    center = vector(0, 0, 0);
+  // Returns the ray from the lens center through the given pixel.
+  // This is only the line; finding what it hits happens in the scene code.
+  ray ray_through_pixel(int column, int row);
 
-    auto viewport_height = VIEWPORT_HEIGHT;
-    auto viewport_width = viewport_height * (double(width) / height);
-
-    auto viewport_u = vector(viewport_width, 0, 0);
-    auto viewport_v = vector(0, -viewport_height, 0);
-
-    pixel_delta_u = viewport_u / width;
-    pixel_delta_v = viewport_v / height;
-
-    auto viewport_upper_left =
-        center - vector(0, 0, FOCAL_LENGTH) - viewport_u / 2 - viewport_v / 2;
-    pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
-  }
-
-  ray get_ray(int column, int row) const {
-    auto pixel_center =
-        pixel00_loc + (column * pixel_delta_u) + (row * pixel_delta_v);
-
-    return ray(center, pixel_center - center);
-  }
+  void move_to(vector new_position);
+  void move_by(vector offset);
+  void set_focal_length(float new_focal_length);
+  void set_sensor_height(float height);
+  void recompute();
 
 private:
-  vector center;
-  vector pixel00_loc;
-  vector pixel_delta_u;
-  vector pixel_delta_v;
+  int resolution_width;  // Pixels across for the output image.
+  int resolution_height; // Pixels down for the output image.
+
+  float aspect_ratio; // Sensor width / height, computed from the resolution.
+  float focal_length; // Distance from the lens center to the sensor.
+
+  vector position; // The lens center in 3D space.
+
+  float sensor_height; // Called the "viewport" in most ray tracing texts.
+  float sensor_width;  // Computed: sensor_height * aspect_ratio.
+  vector sensor_center;
+  vector top_left_pixel_center;
+  vector pixel_step_right; // move one pixel to the right
+  vector pixel_step_down;  // move one pixel down
 };
 
 #endif
