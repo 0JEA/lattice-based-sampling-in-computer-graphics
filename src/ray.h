@@ -12,9 +12,9 @@ run into the reason further in. For now this is much more simple.
 
 // point_at returns the point a distance t along the ray.
 struct ray {
-  vector origin;
+  point origin;
   vector direction;
-  vector point_at(float t) const { return origin + t * direction; }
+  point point_at(float t) const { return origin + t * direction; }
 };
 
 #endif

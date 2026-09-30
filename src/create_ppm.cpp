@@ -18,8 +18,8 @@
 // Do note the width > 1 ? ... : 0
 // This was to fix a bug I found that would happen when the height or width
 // was only 1. The issue is division by zero.
-std::vector<color> gradient(int width, int height) {
-  std::vector<color> pixels;
+image gradient(int width, int height) {
+  image picture{width, height, {}};
 
   for (int row = 0; row < height; ++row) {
     for (int column = 0; column < width; ++column) {
@@ -27,10 +27,10 @@ std::vector<color> gradient(int width, int height) {
       float green = height > 1 ? float(row) / (height - 1) : 0.0f;
       float blue = 0.0f;
 
-      pixels.push_back(color(red, green, blue));
+      picture.pixels.push_back(color(red, green, blue));
     }
   }
-  return pixels;
+  return picture;
 }
 
 int main() {
@@ -40,7 +40,8 @@ int main() {
   int height = get_input<int>(MSG_HEIGHT);
   std::string filename = get_input<std::string>(MSG_FILENAME);
 
-  if (!file_create_ppm(width, height, filename, gradient(width, height))) {
+  image picture = gradient(width, height);
+  if (!file_create_ppm(filename, picture)) {
     return 1;
   }
   std::cout << MSG_FILECREATED + filename + FILE_EXTENSION << "\n";

@@ -1,13 +1,14 @@
 #include "ppm.h"
 
-bool file_create_ppm(int width, int height, std::string filename,
-                     const std::vector<color>& pixels) {
+bool file_create_ppm(const std::string &filename, const image &picture) {
 
   std::ofstream ppm(filename + FILE_EXTENSION);
 
   if (ppm.is_open()) {
-    ppm << "P3\n" << width << ' ' << height << "\n" << MAX_RGB << "\n";
-    for (const color& pixel : pixels) {
+    ppm << "P3\n"
+        << picture.width << ' ' << picture.height << "\n"
+        << MAX_RGB << "\n";
+    for (const color& pixel : picture.pixels) {
       write_color(ppm, pixel[0], pixel[1], pixel[2]);
     }
   } else {

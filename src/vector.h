@@ -58,4 +58,8 @@ vector cross(const vector& a, const vector& b);
 
 vector unit_vector(const vector& v);
 
+// A position in the world. Same three floats as a vector, the name is only
+// there so it reads as "a place" and not "an arrow" or "a color".
+using point = vector;
+
 #endif
