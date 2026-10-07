@@ -9,7 +9,7 @@ all: $(BUILD)/create_ppm.exe $(BUILD)/render.exe
 $(BUILD)/create_ppm.exe: $(BUILD)/create_ppm.o $(SHARED)
 	$(CXX) $^ -o $@
 
-$(BUILD)/render.exe: $(BUILD)/render.o $(BUILD)/camera.o $(SHARED)
+$(BUILD)/render.exe: $(BUILD)/render.o $(BUILD)/camera.o $(BUILD)/sphere.o $(BUILD)/ring.o $(SHARED)
 	$(CXX) $^ -o $@
 
 $(BUILD)/%.o: src/%.cpp | $(BUILD)

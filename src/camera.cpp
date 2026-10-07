@@ -4,7 +4,6 @@
 
 const float PI = 3.14159265358979f;
 
-// Defaults: 640x480, focal length 1, 90 degree vertical field of view.
 camera::camera() : camera(640, 480, 1.0f, 90.0f) {}
 
 camera::camera(int resolution_width, int resolution_height)
@@ -66,8 +65,7 @@ vector camera::get_pixel_step_down() const { return pixel_step_down; }
 void camera::recompute() {
   // Half the sensor height over the focal length is tan(half the fov), so
   // sensor_height = 2 * focal_length * tan(fov / 2).
-  float vertical_fov_radians =
-      vertical_fov_degrees * PI / 180.0f;
+  float vertical_fov_radians = vertical_fov_degrees * PI / 180.0f;
   sensor_height = 2.0f * focal_length * std::tan(vertical_fov_radians / 2.0f);
 
   aspect_ratio = static_cast<float>(resolution_width) / resolution_height;

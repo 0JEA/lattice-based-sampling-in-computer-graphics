@@ -312,6 +312,31 @@ $$
 | **Checkerboard:** the floor color flips every 1 unit along $x$ and $z$. |
 | ![ray floor checkerboard](renders/ray_floor.png)                        |
 
+### 4.5 Moving the camera and changing the lens
+
+All renders are 500x500, with the floor at $y = 0$ and a red row at $z = -5$.
+The originals are in [`renders/`](renders/).
+
+|   |   |   |
+| - | - | - |
+| ![2down](renders/2down.png) | ![inthefloor](renders/inthefloor.png) | ![red_tile_at_-5](renders/red_tile_at_-5.png) |
+| below the floor | on the floor | just above the floor |
+| ![5up](renders/5up.png) | ![30up](renders/30up.png) | ![180](renders/180.png) |
+| 5 units up | 30 units up | 180° field of view |
+| ![130vertfov](renders/130vertfov.png) | ![80vertfov](renders/80vertfov.png) | ![53fov](renders/53fov.png) |
+| 130° field of view | 80° field of view | 53° field of view |
+| ![40fov](renders/40fov.png) | ![20fov](renders/20fov.png) |   |
+| 40° field of view | 20° field of view |   |
+
+### 4.6 A ball, a bowl and a hoop
+
+|   |   |   |
+| - | - | - |
+| ![a](renders/a.png) | ![b](renders/b.png) | ![c](renders/c.png) |
+| a | b | c |
+| ![d](renders/d.png) |   |   |
+| d |   |   |
+
 ---
 
 ## 5. Makefile and Folder Structuring
