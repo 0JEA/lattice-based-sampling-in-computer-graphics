@@ -20,11 +20,12 @@
 4. [Rays and Spheres](#4-rays-and-spheres)
 5. [Makefile and Folder Structuring](#5-makefile-and-folder-structuring)
 6. [My Claude Usage](#6-claude-usage-stat)
-7. [References](#references)
+7. [Vulkan](#7-vulkan)
+8. [References](#references)
 
 ---
 
-## 1. PPM files (portable pixmaps)
+# 1. PPM files (portable pixmaps)
 
 I have begun by using these files as directed in
 [_Ray Tracing in One Weekend_](https://raytracing.github.io/books/RayTracingInOneWeekend.html)
@@ -241,7 +242,7 @@ Regardless here's a reputable quote talking about it:
 
 Source: [C++ Core Guidelines, F.5](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#f5-if-a-function-is-very-small-and-time-critical-declare-it-inline)
 
-## 4. Rays and Spheres
+# 4. Rays and Spheres
 
 ### 4.1 A sphere at the origin
 
@@ -317,25 +318,25 @@ $$
 All renders are 500x500, with the floor at $y = 0$ and a red row at $z = -5$.
 The originals are in [`renders/`](renders/).
 
-|   |   |   |
-| - | - | - |
-| ![2down](renders/2down.png) | ![inthefloor](renders/inthefloor.png) | ![red_tile_at_-5](renders/red_tile_at_-5.png) |
-| below the floor | on the floor | just above the floor |
-| ![5up](renders/5up.png) | ![30up](renders/30up.png) | ![180](renders/180.png) |
-| 5 units up | 30 units up | 180° field of view |
-| ![130vertfov](renders/130vertfov.png) | ![80vertfov](renders/80vertfov.png) | ![53fov](renders/53fov.png) |
-| 130° field of view | 80° field of view | 53° field of view |
-| ![40fov](renders/40fov.png) | ![20fov](renders/20fov.png) |   |
-| 40° field of view | 20° field of view |   |
+|                                       |                                       |                                               |
+| ------------------------------------- | ------------------------------------- | --------------------------------------------- |
+| ![2down](renders/2down.png)           | ![inthefloor](renders/inthefloor.png) | ![red_tile_at_-5](renders/red_tile_at_-5.png) |
+| below the floor                       | on the floor                          | just above the floor                          |
+| ![5up](renders/5up.png)               | ![30up](renders/30up.png)             | ![180](renders/180.png)                       |
+| 5 units up                            | 30 units up                           | 180° field of view                            |
+| ![130vertfov](renders/130vertfov.png) | ![80vertfov](renders/80vertfov.png)   | ![53fov](renders/53fov.png)                   |
+| 130° field of view                    | 80° field of view                     | 53° field of view                             |
+| ![40fov](renders/40fov.png)           | ![20fov](renders/20fov.png)           |                                               |
+| 40° field of view                     | 20° field of view                     |                                               |
 
 ### 4.6 A ball, a bowl and a hoop
 
-|   |   |   |
-| - | - | - |
+|                     |                     |                     |
+| ------------------- | ------------------- | ------------------- |
 | ![a](renders/a.png) | ![b](renders/b.png) | ![c](renders/c.png) |
-| a | b | c |
-| ![d](renders/d.png) |   |   |
-| d |   |   |
+| a                   | b                   | c                   |
+| ![d](renders/d.png) |                     |                     |
+| d                   |                     |                     |
 
 ---
 
@@ -374,6 +375,89 @@ hour.
 | The camera model (position, window, world, painting, moving things)                            | 9              |
 | Names, definitons, convensions, what values mean/translate too.                                | 7              |
 
+# 7. Vulkan
+
+### _**Software Requirements**_
+
+- Vulkan-capable GPU with ray tracing support (e.g. NVIDIA RTX) and current drivers
+- Vulkan SDK ≥ 1.3.261 (headers, loader, validation layers, glslang, shaderc)
+- CMake ≥ 3.5, a C++20 compiler, Ninja or Make, Git
+
+**Arch Linux:**
+
+```sh
+sudo pacman -S git cmake ninja gcc vulkan-headers vulkan-icd-loader \
+               vulkan-validation-layers glslang shaderc
+```
+
+**Other platforms:** install the [LunarG Vulkan SDK](https://vulkan.lunarg.com/sdk/home).
+
+**Setup:**
+
+```sh
+git clone https://github.com/nvpro-samples/nvpro_core.git
+git clone https://github.com/nvpro-samples/vk_mini_path_tracer.git
+cd vk_mini_path_tracer
+cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug
+cmake --build build
+```
+
+Both repos must be cloned into the same parent folder. Other libraries (GLFW,
+GLM, ImGui) come bundled inside `nvpro_core`.
+
+### 7.1 Terminology
+
+| Word                  | Meaning                                                                                                                                                                                                                                                                                                                   |
+| :-------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Vulkan                | A software API that allows interfacing directly with supported GPU's.                                                                                                                                                                                                                                                     |
+| Ray                   | A mathematical object $\text{over} \space \mathbb{R}^3$ Where a `direction D` is attached to a `point P`, such that you can control a variable `t` to find a point along the the ray. $\\ {R}(t)= P + tD, \text{where} \space t>=0$                                                                                       |
+| Ray Query             | A `Ray Query` is similar to the `Ray` I made for the CPU ray tracer. The difference is simply implementation and the fact its specific to the GPU. A `Ray Query` is just the intersection along the ray.                                                                                                                  |
+| Shader                | A program that uses/modifies data to visually transform data.                                                                                                                                                                                                                                                             |
+| Graphics Pipeline     | A concept of working with objects over rays. Taking each object, transforming it into verticies. Then many different types of "passes" happen, each with their own shaders to generate a final output. Object -> Verticies -> Shader Passes -> Resuling Pixel. Objects are not equations, but rather meshes of verticies. |
+| Ray Tracing Pipeline. | _Insert concise definition here._                                                                                                                                                                                                                                                                                         |
+| Compute Pipleine      | A single shader detailing how everything will like. Exactly like my CPU renderer.                                                                                                                                                                                                                                         |
+
+There are many more pipeline models, some of which are outlined in these sleek
+slides from AMD, I'm sure there's plenty more resources, but this is not the
+current focus.
+
+[AMD GPU Open: Graphics Pipeline Powerpoint](https://gpuopen.com/download/AMD_Graphics_pipeline_GIC2020.pdf)
+
+### 7.2 Direction
+
+I am following this Github repo I found: - [Github: Vulkan Mini Path Tracer](https://nvpro-samples.github.io/vk_mini_path_tracer/)
+They implement a `Compute Pipeline` "Ray" tracer just like I did with the CPU.
+
+It's become evident to me that there is a **much** bigger learning curve to Vulkan
+than what I could have ever imagined. Since Vulkan is simply an API there are
+many ways to use it and each is backed by years of research. For my own career
+it would benefit me greatly to continue my studies by next following this guide
+on the graphics pipeline. [VKGuide](https://vkguide.dev/)
+
+Any additional resources I find for Vulkan related things I'll throw below.
+Seemingly with how little time I've spent looking there is a wealth of dedicated
+people making tons of great resources.
+
+- [Matthieu Baty: GPU Programming with Vulkan](https://mbty.fr/blog/list)
+
+### 7.3 Inspiration
+
+In my searching I found reference to a man named Christoph Peters, he's noted
+on the front page of Vulkan's website. They were showcasing his blog.
+
+- [Christoph Peters - Moments in Graphics](https://momentsingraphics.de/index.html)
+
+This guy is basically the absolute role model for what I would love to have for
+a academic path. Having worked for both Intel & Nvidia, and now working at TU
+Delft in the Netherlands. Working now for the university as a Graphics Researcher
+with about 30 publications.
+
+I understand this is a needle in a haystack type of situation, but working for
+these companies and in this exact field, and now doing research just in graphics
+is an absolute dream for me. _**I'll aim high and dream :)**_
+
+### 7.5 Continuing the "Vulkan Mini Path Tracer"
+
 ## References
 
 - [_Ray Tracing in One Weekend_](https://raytracing.github.io/books/RayTracingInOneWeekend.html), chapters 2.1 and 3
@@ -383,3 +467,7 @@ hour.
 - [Wikipedia: Sphere](https://en.wikipedia.org/wiki/Sphere)
 - [Wikipedia: Quantization](<https://en.wikipedia.org/wiki/Quantization_(signal_processing)>)
 - [Gnu: Make](https://www.gnu.org/software/make/manual/make.html)
+- [Christoph Peters - Moments in Graphics](https://momentsingraphics.de/index.html)
+- [Matthieu Baty: GPU Programming with Vulkan](https://mbty.fr/blog/list)
+- [VKGuide: A Vulkan Guide](https://vkguide.dev/)
+- [AMD GPU Open: Graphics Pipeline Powerpoint](https://gpuopen.com/download/AMD_Graphics_pipeline_GIC2020.pdf)
