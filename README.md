@@ -20,8 +20,9 @@
 4. [Rays and Spheres](#4-rays-and-spheres)
 5. [Makefile and Folder Structuring](#5-makefile-and-folder-structuring)
 6. [My Claude Usage](#6-claude-usage-stat)
-7. [Vulkan](#7-vulkan)
-8. [References](#references)
+7. [Handwritten Math Notes](#7-handwritten-math-notes)
+8. [Vulkan](#8-vulkan)
+9. [References](#references)
 
 ---
 
@@ -375,7 +376,27 @@ hour.
 | The camera model (position, window, world, painting, moving things)                            | 9              |
 | Names, definitons, convensions, what values mean/translate too.                                | 7              |
 
-# 7. Vulkan
+# 7. Handwritten Math Notes
+
+Worked through by hand on my iPad. Full PDF: [math-notes.pdf](notes/math-notes.pdf)
+
+### 7.1 Spheres, from circles to vectors
+
+![Spheres, from circles to vectors](notes/math-1.png)
+
+### 7.2 Ray-sphere intersection
+
+![Ray-sphere intersection](notes/math-2.png)
+
+### 7.3 Surface normals and lighting
+
+![Surface normals and lighting](notes/math-3.png)
+
+### 7.4 Antialiasing
+
+![Antialiasing](notes/math-4.png)
+
+# 8. Vulkan
 
 ### _**Software Requirements**_
 
@@ -405,7 +426,7 @@ cmake --build build
 Both repos must be cloned into the same parent folder. Other libraries (GLFW,
 GLM, ImGui) come bundled inside `nvpro_core`.
 
-### 7.1 Terminology
+### 8.1 Terminology
 
 | Word                  | Meaning                                                                                                                                                                                                                                                                                                                   |
 | :-------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -423,7 +444,7 @@ current focus.
 
 [AMD GPU Open: Graphics Pipeline Powerpoint](https://gpuopen.com/download/AMD_Graphics_pipeline_GIC2020.pdf)
 
-### 7.2 Direction
+### 8.2 Direction
 
 I am following this Github repo I found: - [Github: Vulkan Mini Path Tracer](https://nvpro-samples.github.io/vk_mini_path_tracer/)
 They implement a `Compute Pipeline` "Ray" tracer just like I did with the CPU.
@@ -440,7 +461,7 @@ people making tons of great resources.
 
 - [Matthieu Baty: GPU Programming with Vulkan](https://mbty.fr/blog/list)
 
-### 7.3 Inspiration
+### 8.3 Inspiration
 
 In my searching I found reference to a man named Christoph Peters, he's noted
 on the front page of Vulkan's website. They were showcasing his blog.
@@ -456,7 +477,7 @@ I understand this is a needle in a haystack type of situation, but working for
 these companies and in this exact field, and now doing research just in graphics
 is an absolute dream for me. _**I'll aim high and dream :)**_
 
-### 7.5 Continuing the "Vulkan Mini Path Tracer"
+### 8.5 Continuing the "Vulkan Mini Path Tracer"
 
 ## References
 
