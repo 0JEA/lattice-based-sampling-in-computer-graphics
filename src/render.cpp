@@ -13,6 +13,20 @@
 
 #define MSG_WELCOME "Ray Traced PPM File Creator"
 
+constexpr float LIGHT_INTENSITY = 25.0f;
+constexpr float AMBIENT = 0.2f;
+constexpr float SHADOW_EPSILON = 0.001f;
+
+// abstracting this out would be a good idea.
+const color pumpkin = color(255, 117, 24) / 255;
+const color tangerine = color(255, 153, 102) / 255;
+const color emerald = color(80, 200, 120) / 255;
+const color gunmetal = color(42, 52, 57) / 255;
+const color white = color(255, 255, 255) / 255;
+const color red = color(255, 0, 0) / 255;
+const color violet = color(139, 92, 246) / 255;
+const color sky_blue = color(56, 189, 248) / 255;
+
 color blend(color from, color to, float strength) {
   return from + strength * (to - from);
 }
@@ -24,13 +38,12 @@ color shade(color base, vector n, point P, const ray &r,
   }
 
   point light_position(-3, 4, -2);
-  float light_intensity = 25.0f;
 
   ray shadow{P, light_position - P};
   for (const object *thing : scene) {
     float t = thing->hit(shadow);
-    if (t > 0.001f && t < 1.0f) {
-      return blend(color(0, 0, 0), base, 0.2f);
+    if (t > SHADOW_EPSILON && t < 1.0f) {
+      return blend(color(0, 0, 0), base, AMBIENT);
     }
   }
 
@@ -38,43 +51,35 @@ color shade(color base, vector n, point P, const ray &r,
   float distance = to_light.length();
   vector toward_light = to_light / distance;
 
-  float falloff = light_intensity / (distance * distance);
+  float falloff = LIGHT_INTENSITY / (distance * distance);
   float brightness = std::fmax(0.0f, dot(n, toward_light)) * falloff;
   brightness = std::fmin(1.0f, brightness);
-  return blend(color(0, 0, 0), base, 0.2f + 0.8f * brightness);
+  return blend(color(0, 0, 0), base, AMBIENT + (1 - AMBIENT) * brightness);
+}
+
+struct hit_record {
+  float t = INFINITY;
+  const object *thing = nullptr;
+};
+
+hit_record closest_hit(const ray &r, const std::vector<object *> &scene) {
+  hit_record closest;
+  for (const object *thing : scene) {
+    float t = thing->hit(r);
+    if (t > 0 && t < closest.t) {
+      closest = {t, thing};
+    }
+  }
+  return closest;
 }
 
 // using: https://tailwindcolor.tools/color-library
 color ray_color(const ray &r, const std::vector<object *> &scene) {
 
-  // abstracting this out would be a good idea.
-
-  color pumpkin = color(255, 117, 24) / 255;
-  color tangerine = color(255, 153, 102) / 255;
-  color emerald = color(80, 200, 120) / 255;
-  color gunmetal = color(42, 52, 57) / 255;
-  color white = color(255, 255, 255) / 255;
-  color red = color(255, 0, 0) / 255;
-  color violet = color(139, 92, 246) / 255;
-  color sky_blue = color(56, 189, 248) / 255;
-
-  float width = unit_vector(r.direction).x();
-  float height = unit_vector(r.direction).y();
-  float depth = unit_vector(r.direction).z();
-
-  float nearest = INFINITY;
-  const object *closest = nullptr;
-  for (const object *thing : scene) {
-    float t = thing->hit(r);
-    if (t > 0 && t < nearest) {
-      nearest = t;
-      closest = thing;
-    }
-  }
-
-  if (closest) {
-    point P = r.point_at(nearest);
-    return shade(closest->base_color, closest->normal_at(P), P, r, scene);
+  hit_record hit = closest_hit(r, scene);
+  if (hit.thing) {
+    point P = r.point_at(hit.t);
+    return shade(hit.thing->base_color, hit.thing->normal_at(P), P, r, scene);
   }
 
   return emerald;
@@ -103,17 +108,17 @@ int main() {
   // int width = get_input<int>(MSG_WIDTH);
   // int height = get_input<int>(MSG_HEIGHT);
   // std::string filename = get_input<std::string>(MSG_FILENAME);
-  int width = 1200;
-  int height = 1200;
+
+  int width = 940;
+  int height = 1000;
   std::string filename = "meow";
 
+  sphere red_ball = sphere(0.3, point(0.5, 0.5, -6), red);
+  sphere violet_ball = sphere(2, point(-2, 1.5, -6), violet);
+
   camera cam(width, height);
-  cam.move_to(vector(0, 1, 0));
-  cam.set_vertical_fov(90);
-
-  sphere red_ball = sphere(0.3, point(0.5, 0.5, -6), color(255, 0, 0) / 255);
-  sphere violet_ball = sphere(2, point(-2, 1.5, -6), color(139, 92, 246) / 255);
-
+  cam.move_to(vector(-1.5, 0.5, 1));
+  cam.set_vertical_fov(50);
   std::vector<object *> scene = {&red_ball, &violet_ball};
 
   image picture = render(cam, scene);

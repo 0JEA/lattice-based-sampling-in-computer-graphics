@@ -392,9 +392,26 @@ Worked through by hand on my iPad. Full PDF: [math-notes.pdf](notes/math-notes.p
 
 ![Surface normals and lighting](notes/math-3.png)
 
-### 7.4 Antialiasing
+### 7.4 Review and local lighting
 
-![Antialiasing](notes/math-4.png)
+![Review and local lighting](notes/math-4.png)
+
+### 7.5 Shadows and line of sight
+
+![Shadows and line of sight](notes/math-5.png)
+
+### 7.6 Lighting and shadows
+
+|                                                                 |                                                     |                                                         |
+| --------------------------------------------------------------- | --------------------------------------------------- | ------------------------------------------------------- |
+| ![light_directional](renders/light_directional.png)             | ![light_point](renders/light_point.png)             | ![light_shadows](renders/light_shadows.png)             |
+| directional light                                               | point light with falloff                            | point light with shadows                                |
+| ![light_directional_close](renders/light_directional_close.png) | ![light_point_close](renders/light_point_close.png) | ![light_shadows_close](renders/light_shadows_close.png) |
+| directional light, closer                                       | point light with falloff, closer                    | point light with shadows, closer                        |
+
+### 7.7 Antialiasing
+
+![Antialiasing](notes/math-6.png)
 
 # 8. Vulkan
 

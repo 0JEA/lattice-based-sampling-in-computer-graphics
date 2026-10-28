@@ -10,8 +10,7 @@ struct vector {
 
   // Args or not, it gets created wither with zeros or the args.
   vector() : element{0, 0, 0} {}
-  vector(float element1, float element2, float element3)
-      : element{element1, element2, element3} {}
+  vector(float x, float y, float z) : element{x, y, z} {}
 
   // No need for getters, dont see a need to make this a class and have anything
   // private.
