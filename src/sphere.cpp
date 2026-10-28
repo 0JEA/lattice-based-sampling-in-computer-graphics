@@ -1,63 +1,47 @@
 #include "sphere.h"
-
+#include "vector.h"
 #include <cmath>
 
-bool sphere_crossings(const sphere &ball, const ray &light_ray, float &t_minus,
-                      float &t_plus) {
-  const point &C = ball.center;
-  const float r = ball.radius;
-  const point &R = light_ray.origin;
-  const vector &d = light_ray.direction;
+sphere::sphere() {
+  this->name = "";
+  this->radius = 1;
+  this->origin = point(0, 0, 0);
+};
 
-  vector O = R - C;
+sphere::sphere(float radius) {
+  this->name = "";
+  this->radius = radius;
+  this->origin = point(0, 0, 0);
+};
 
-  float a = dot(d, d);
-  float b = 2.0f * dot(d, O);
-  float c = dot(O, O) - r * r;
+sphere::sphere(float radius, point origin) {
+  this->name = "";
+  this->radius = radius;
+  this->origin = origin;
+};
 
-  float discriminant = b * b - 4.0f * a * c;
+sphere::sphere(float radius, point origin, color base_color) {
+  this->name = "";
+  this->radius = radius;
+  this->origin = origin;
+  this->base_color = base_color;
+}
+
+// ISSUE:
+// Auto override because h file does and thats ovverirding object?
+float sphere::getArea() { return (4 * PI) * (radius * radius); };
+
+float sphere::hit(const ray &r) const {
+  vector OC = origin - r.origin;
+  float a = dot(r.direction, r.direction);
+  float b = -2.0 * dot(r.direction, OC);
+  float c = dot(OC, OC) - radius * radius;
+  float discriminant = b * b - 4 * a * c;
   if (discriminant < 0) {
-    return false;
-  }
-
-  float root = std::sqrt(discriminant);
-  t_minus = (-b - root) / (2.0f * a);
-  t_plus = (-b + root) / (2.0f * a);
-  return true;
-}
-
-float steps_to_sphere(const sphere &ball, const ray &light_ray) {
-  float t_minus, t_plus;
-  if (!sphere_crossings(ball, light_ray, t_minus, t_plus)) {
     return -1;
   }
 
-  if (t_minus > 0) {
-    return t_minus;
-  }
-
-  if (t_plus > 0) {
-    return t_plus;
-  }
-
-  return -1;
+  return (-b - std::sqrt(discriminant)) / (2 * a);
 }
 
-float steps_to_bowl(const sphere &bowl, const ray &light_ray) {
-  float t_minus, t_plus;
-  if (!sphere_crossings(bowl, light_ray, t_minus, t_plus)) {
-    return -1;
-  }
-
-  float cut_height = bowl.center.y();
-
-  if (t_minus > 0 && light_ray.point_at(t_minus).y() <= cut_height) {
-    return t_minus;
-  }
-
-  if (t_plus > 0 && light_ray.point_at(t_plus).y() <= cut_height) {
-    return t_plus;
-  }
-
-  return -1;
-}
+vector sphere::normal_at(point P) const { return (P - origin) / radius; }

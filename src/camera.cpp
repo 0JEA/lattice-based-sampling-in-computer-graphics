@@ -1,9 +1,9 @@
 #include "camera.h"
-
 #include <cmath>
 
 const float PI = 3.14159265358979f;
 
+// Defaults: 640x480, focal length 1, 90 degree vertical field of view.
 camera::camera() : camera(640, 480, 1.0f, 90.0f) {}
 
 camera::camera(int resolution_width, int resolution_height)
@@ -18,8 +18,7 @@ camera::camera(int resolution_width, int resolution_height, float focal_length,
 }
 
 ray camera::ray_through_pixel(int column, int row) const {
-  point pixel_center =
-      top_left_pixel_center + column * pixel_step_right + row * pixel_step_down;
+  point pixel_center = top_left_pixel_center + column * pixel_step_right + row * pixel_step_down;
   vector direction = pixel_center - position;
   return ray{position, direction};
 }
@@ -82,4 +81,4 @@ void camera::recompute() {
   // Here we're looking at a pixel as a square and this is the middle of that.
   top_left_pixel_center =
       top_left_corner + 0.5f * (pixel_step_right + pixel_step_down);
-}
+} 

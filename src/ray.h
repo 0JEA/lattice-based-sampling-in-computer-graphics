@@ -2,6 +2,7 @@
 #define RAY_H
 
 // Lets avoid the short "vec" name that was used, I'd prefer verbose.
+#include "object.h"
 #include "vector.h"
 
 /*
@@ -10,10 +11,10 @@ type, by making it a class with private data members and getters. Perhaps ill
 run into the reason further in. For now this is much more simple.
  */
 
-// point_at returns the point a distance t along the ray.
 struct ray {
   point origin;
   vector direction;
+
   point point_at(float t) const { return origin + t * direction; }
 };
 

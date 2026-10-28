@@ -4,12 +4,11 @@
 #include "input.h"
 #include "ppm.h"
 #include "ray.h"
-#include "ring.h"
 #include "sphere.h"
 #include "vector.h"
 #include <cmath>
-#include <initializer_list>
 #include <iostream>
+#include <math.h>
 #include <string>
 
 #define MSG_WELCOME "Ray Traced PPM File Creator"
@@ -18,18 +17,38 @@ color blend(color from, color to, float strength) {
   return from + strength * (to - from);
 }
 
-color shade(color base, vector n, const ray &r) {
+color shade(color base, vector n, point P, const ray &r,
+            const std::vector<object *> &scene) {
   if (dot(r.direction, n) > 0) {
     n = -n;
   }
 
-  vector toward_light = unit_vector(vector(-1, 1, 1));
-  float brightness = std::fmax(0.0f, dot(n, toward_light));
+  point light_position(-3, 4, -2);
+  float light_intensity = 25.0f;
+
+  ray shadow{P, light_position - P};
+  for (const object *thing : scene) {
+    float t = thing->hit(shadow);
+    if (t > 0.001f && t < 1.0f) {
+      return blend(color(0, 0, 0), base, 0.2f);
+    }
+  }
+
+  vector to_light = light_position - P;
+  float distance = to_light.length();
+  vector toward_light = to_light / distance;
+
+  float falloff = light_intensity / (distance * distance);
+  float brightness = std::fmax(0.0f, dot(n, toward_light)) * falloff;
+  brightness = std::fmin(1.0f, brightness);
   return blend(color(0, 0, 0), base, 0.2f + 0.8f * brightness);
 }
 
 // using: https://tailwindcolor.tools/color-library
-color ray_color(const ray &r) {
+color ray_color(const ray &r, const std::vector<object *> &scene) {
+
+  // abstracting this out would be a good idea.
+
   color pumpkin = color(255, 117, 24) / 255;
   color tangerine = color(255, 153, 102) / 255;
   color emerald = color(80, 200, 120) / 255;
@@ -39,93 +58,65 @@ color ray_color(const ray &r) {
   color violet = color(139, 92, 246) / 255;
   color sky_blue = color(56, 189, 248) / 255;
 
-  float height = unit_vector(r.direction).y();
   float width = unit_vector(r.direction).x();
-
-  sphere ball{point(0, 1, -3), 1};
-  sphere bowl{point(0, 3, -3), 0.8f};
-  ring hoop{point(0, 3, -3), unit_vector(vector(0.3f, 1, 0.5f)), 1.25f, 1.4f};
-
-  float steps_to_ball = steps_to_sphere(ball, r);
-  float steps_to_the_bowl = steps_to_bowl(bowl, r);
-  float steps_to_hoop = steps_to_ring(hoop, r);
-
-  float floor_height = 0;
-  float steps_to_floor = -1;
-  if (r.direction.y() != 0) {
-    steps_to_floor = (floor_height - r.origin.y()) / r.direction.y();
-  }
+  float height = unit_vector(r.direction).y();
+  float depth = unit_vector(r.direction).z();
 
   float nearest = INFINITY;
-  for (float t :
-       {steps_to_ball, steps_to_the_bowl, steps_to_hoop, steps_to_floor}) {
+  const object *closest = nullptr;
+  for (const object *thing : scene) {
+    float t = thing->hit(r);
     if (t > 0 && t < nearest) {
       nearest = t;
+      closest = thing;
     }
   }
 
-  if (nearest == steps_to_ball) {
+  if (closest) {
     point P = r.point_at(nearest);
-    return shade(emerald, (P - ball.center) / ball.radius, r);
+    return shade(closest->base_color, closest->normal_at(P), P, r, scene);
   }
 
-  if (nearest == steps_to_the_bowl) {
-    point P = r.point_at(nearest);
-    return shade(violet, (P - bowl.center) / bowl.radius, r);
-  }
-
-  if (nearest == steps_to_hoop) {
-    return shade(sky_blue, hoop.normal, r);
-  }
-
-  if (nearest == steps_to_floor) {
-    point landing_spot = r.point_at(steps_to_floor);
-    int tile_across = int(std::floor(landing_spot.x()));
-    int tile_deep = int(std::floor(landing_spot.z()));
-    bool is_even_tile = (tile_across + tile_deep) % 2 == 0;
-
-    bool hit_top = r.direction.y() < 0;
-    if (hit_top) {
-      if (tile_deep == -5) {
-        return red;
-      }
-      return is_even_tile ? white : gunmetal;
-    }
-
-    return is_even_tile ? gunmetal : tangerine;
-  }
-
-  float radius = 0.5;
-  if (width * width + height * height <= radius * radius) {
-    return pumpkin;
-  }
-
-  return blend(emerald, pumpkin, (height + 1) / 2);
+  return emerald;
 }
 
-image render(const camera &cam) {
+image render(const camera &cam, const std::vector<object *> &scene) {
   image picture{cam.get_resolution_width(), cam.get_resolution_height(), {}};
   picture.pixels.reserve(picture.width * picture.height);
+  // INFO: Reserve is just to allocate the space for the vector.
 
   for (int row = 0; row < picture.height; ++row) {
     for (int column = 0; column < picture.width; ++column) {
-      picture.pixels.push_back(ray_color(cam.ray_through_pixel(column, row)));
+      picture.pixels.push_back(
+          ray_color(cam.ray_through_pixel(column, row), scene));
+      // INFO: push_back just adds to the end of the vector.
     }
   }
   return picture;
 }
 
+void getInputs() {}
+
 int main() {
   std::cout << MSG_WELCOME << "\n";
-  int width = get_input<int>(MSG_WIDTH);
-  int height = get_input<int>(MSG_HEIGHT);
-  std::string filename = get_input<std::string>(MSG_FILENAME);
+
+  // int width = get_input<int>(MSG_WIDTH);
+  // int height = get_input<int>(MSG_HEIGHT);
+  // std::string filename = get_input<std::string>(MSG_FILENAME);
+  int width = 1200;
+  int height = 1200;
+  std::string filename = "meow";
 
   camera cam(width, height);
   cam.move_to(vector(0, 1, 0));
   cam.set_vertical_fov(90);
 
-  image picture = render(cam);
+  sphere red_ball = sphere(0.3, point(0.5, 0.5, -6), color(255, 0, 0) / 255);
+  sphere violet_ball = sphere(2, point(-2, 1.5, -6), color(139, 92, 246) / 255);
+
+  std::vector<object *> scene = {&red_ball, &violet_ball};
+
+  image picture = render(cam, scene);
   if (!file_create_ppm(filename, picture)) {
     return 1;
   }

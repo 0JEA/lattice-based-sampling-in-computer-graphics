@@ -49,7 +49,7 @@ private:
   // Called the "viewport" in most ray tracing texts.
   // Computed from focal_length and vertical_fov_degrees.
   float sensor_height;
-  float sensor_width;  // Computed: sensor_height * aspect_ratio.
+  float sensor_width; // Computed: sensor_height * aspect_ratio.
   point sensor_center;
   point top_left_pixel_center;
   vector pixel_step_right; // move one pixel to the right
