@@ -16,6 +16,7 @@
 constexpr float LIGHT_INTENSITY = 25.0f;
 constexpr float AMBIENT = 0.2f;
 constexpr float SHADOW_EPSILON = 0.001f;
+constexpr int AA_GRID = 4;
 
 // abstracting this out would be a good idea.
 const color pumpkin = color(255, 117, 24) / 255;
@@ -85,15 +86,34 @@ color ray_color(const ray &r, const std::vector<object *> &scene) {
   return emerald;
 }
 
-image render(const camera &cam, const std::vector<object *> &scene) {
+image render(const camera &cam, const std::vector<object *> &scene,
+             int grid = 1) {
   image picture{cam.get_resolution_width(), cam.get_resolution_height(), {}};
   picture.pixels.reserve(picture.width * picture.height);
   // INFO: Reserve is just to allocate the space for the vector.
 
   for (int row = 0; row < picture.height; ++row) {
     for (int column = 0; column < picture.width; ++column) {
-      picture.pixels.push_back(
-          ray_color(cam.ray_through_pixel(column, row), scene));
+      // picture.pixels.push_back(
+      //     ray_color(cam.ray_through_pixel(column, row), scene));
+
+      // INFO: now for AA!
+      // will need to abstract this out for sure.
+      // its soo expensive right now.
+
+      // starting at black, then append each rays result
+      color total(0, 0, 0);
+      for (int i = 0; i < grid; ++i) {
+        for (int j = 0; j < grid; ++j) {
+          float offset_x = (j + 0.5f) / grid - 0.5f;
+          float offset_y = (i + 0.5f) / grid - 0.5f;
+          ray r = cam.ray_through_pixel(column, row, offset_x, offset_y);
+          total = total + ray_color(r, scene);
+        }
+      }
+      picture.pixels.push_back(total / (grid * grid));
+      // INFO: returning the averaged result from the offsets
+      //       for a now aliased pixel!
       // INFO: push_back just adds to the end of the vector.
     }
   }
@@ -109,19 +129,21 @@ int main() {
   // int height = get_input<int>(MSG_HEIGHT);
   // std::string filename = get_input<std::string>(MSG_FILENAME);
 
-  int width = 940;
-  int height = 1000;
+  int width = 400;
+  int height = 400;
   std::string filename = "meow";
 
-  sphere red_ball = sphere(0.3, point(0.5, 0.5, -6), red);
-  sphere violet_ball = sphere(2, point(-2, 1.5, -6), violet);
+  sphere red_ball = sphere(0.3, point(0, 0, 0), red);
+  // sphere violet_ball = sphere(2, point(-2, 1.5, -6), violet);
 
   camera cam(width, height);
-  cam.move_to(vector(-1.5, 0.5, 1));
-  cam.set_vertical_fov(50);
-  std::vector<object *> scene = {&red_ball, &violet_ball};
+  cam.move_to(vector(0.3, 0, 0.8));
+  cam.set_vertical_fov(90);
+  std::vector<object *> scene = {&red_ball};
 
-  image picture = render(cam, scene);
+  // std::vector<object *> scene = {&red_ball, &violet_ball};
+
+  image picture = render(cam, scene, AA_GRID);
   if (!file_create_ppm(filename, picture)) {
     return 1;
   }

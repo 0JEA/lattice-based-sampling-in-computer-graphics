@@ -17,9 +17,11 @@ camera::camera(int resolution_width, int resolution_height, float focal_length,
   recompute();
 }
 
-ray camera::ray_through_pixel(int column, int row) const {
-  point pixel_center = top_left_pixel_center + column * pixel_step_right + row * pixel_step_down;
-  vector direction = pixel_center - position;
+ray camera::ray_through_pixel(int column, int row, float offset_x,
+                              float offset_y) const {
+  point target = top_left_pixel_center + (column + offset_x) * pixel_step_right +
+                 (row + offset_y) * pixel_step_down;
+  vector direction = target - position;
   return ray{position, direction};
 }
 
@@ -81,4 +83,4 @@ void camera::recompute() {
   // Here we're looking at a pixel as a square and this is the middle of that.
   top_left_pixel_center =
       top_left_corner + 0.5f * (pixel_step_right + pixel_step_down);
-} 
+}

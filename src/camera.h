@@ -15,7 +15,8 @@ public:
 
   // Returns the ray from the lens center through the given pixel.
   // This is only the line; finding what it hits happens in the scene code.
-  ray ray_through_pixel(int column, int row) const;
+  ray ray_through_pixel(int column, int row, float offset_x = 0,
+                        float offset_y = 0) const;
 
   void move_to(point new_position);
   void move_by(vector offset);

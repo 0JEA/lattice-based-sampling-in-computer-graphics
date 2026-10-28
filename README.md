@@ -413,6 +413,13 @@ Worked through by hand on my iPad. Full PDF: [math-notes.pdf](notes/math-notes.p
 
 ![Antialiasing](notes/math-6.png)
 
+|                                         |                                             |                                         |
+| --------------------------------------- | ------------------------------------------- | --------------------------------------- |
+| ![aa_zoom_off](renders/aa_zoom_off.png) | ![aa_zoom_2x2](renders/aa_zoom_2x2.png)     | ![aa_zoom_4x4](renders/aa_zoom_4x4.png) |
+| aa zoom off                             | aa zoom 2x2                                 | aa zoom 4x4                             |
+| ![aa_zoom_8x8](renders/aa_zoom_8x8.png) | ![aa_zoom_16x16](renders/aa_zoom_16x16.png) |                                         |
+| aa zoom 8x8                             | aa zoom 16x16                               |                                         |
+
 # 8. Vulkan
 
 ### _**Software Requirements**_
