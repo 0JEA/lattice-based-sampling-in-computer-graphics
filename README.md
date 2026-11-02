@@ -503,6 +503,56 @@ is an absolute dream for me. _**I'll aim high and dream :)**_
 
 ### 8.5 Continuing the "Vulkan Mini Path Tracer"
 
+After getting ninja working and understanding it's just a fancy version of Make,
+the tutorial jumps into getting a first build working.
+
+Interesting things to note right off the start is that Vulkan has a lot of
+layers to its API. There are more base functionality like the validator that
+ensures all your usage meets the Vulkan specification and will throw errors on
+use. This are the best exceptions I've seen to date.
+
+Simply something like supplying a null pointer to a function that expects a specific
+object throws a detailed error.
+
+```Terminal Output
+ERROR: VUID-vkAllocateCommandBuffers-pAllocateInfo-parameter
+--> vkAllocateCommandBuffers(): pAllocateInfo is NULL.
+The Vulkan spec states: pAllocateInfo must be a valid pointer to a valid VkCommandBufferAllocateInfo structure (https://docs.vulkan.org/spec/latest/chapters/cmdbuffers.html#VUID-vkAllocateCommandBuffers-pAllocateInfo-parameter)"
+```
+
+There are a plethora of plugins/layers of the API that can be enabled for additional
+features such as debugging, but for now I'm not doing anything extra.
+
+### 8.6 C++ initialization Types
+
+Something new I have no played with before is the more abstract ways of initialization.
+This tutorial uses "uniform" and "designated" initialization.
+
+While the name they use is "uniform" the actual output of it isn't so uniform.
+It would seem that:
+
+- [cppreference: List Initialization](https://en.cppreference.com/cpp/language/list_initialization)
+
+### 8.7 C++ Narrowing
+
+Also I'm new to "narrowing". The process of the compiler without warning auto
+converting values to fit inside the expected types. Like float to int, by
+truncation. By wrapping your initializations in curly brackets you stop this
+and force the compiler to spit out errors.
+
+```cpp
+// Assume Point has: int x, y, x;
+
+Point P(1,2.9); // Narrowing allowed -> P = (1,2)
+Point P{1,2.9}; // ERROR narrowing not allowed
+
+Point P(1,2); // z = whatever is in memory there. Default init
+Point P{1,2}; // z = 0; The memory gets zeroed out.
+```
+
+- [C++ Core Guidelines: Initializer Syntax](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#es23-prefer-the--initializer-syntax)
+- [Clang: bugprone-narrowing-conversions](https://clang.llvm.org/extra/clang-tidy/checks/bugprone/narrowing-conversions.html)
+
 ## References
 
 - [_Ray Tracing in One Weekend_](https://raytracing.github.io/books/RayTracingInOneWeekend.html), chapters 2.1 and 3
