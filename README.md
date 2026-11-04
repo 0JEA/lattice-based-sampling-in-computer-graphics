@@ -22,7 +22,8 @@
 6. [My Claude Usage](#6-claude-usage-stat)
 7. [Handwritten Math Notes](#7-handwritten-math-notes)
 8. [Vulkan](#8-vulkan)
-9. [References](#references)
+9. [C++ Intricacies](#90-c-intricacies)
+10. [References](#references)
 
 ---
 
@@ -501,7 +502,7 @@ I understand this is a needle in a haystack type of situation, but working for
 these companies and in this exact field, and now doing research just in graphics
 is an absolute dream for me. _**I'll aim high and dream :)**_
 
-### 8.5 Continuing the "Vulkan Mini Path Tracer"
+### 8.4 Continuing the "Vulkan Mini Path Tracer"
 
 After getting ninja working and understanding it's just a fancy version of Make,
 the tutorial jumps into getting a first build working.
@@ -514,6 +515,13 @@ use. This are the best exceptions I've seen to date.
 Simply something like supplying a null pointer to a function that expects a specific
 object throws a detailed error.
 
+### 8.5 Some bugs in the tutorial
+
+In section 2.21 they quite strongly argue for different types of initializations
+for the different vulkan objects, they say some terms that are incorrect.
+
+See [9.1 C++ initialization types](#91-c-initialization-types)
+
 ```Terminal Output
 ERROR: VUID-vkAllocateCommandBuffers-pAllocateInfo-parameter
 --> vkAllocateCommandBuffers(): pAllocateInfo is NULL.
@@ -523,35 +531,69 @@ The Vulkan spec states: pAllocateInfo must be a valid pointer to a valid VkComma
 There are a plethora of plugins/layers of the API that can be enabled for additional
 features such as debugging, but for now I'm not doing anything extra.
 
-### 8.6 C++ initialization Types
+## 9.0 C++ Intricacies
+
+### 9.1 C++ initialization Types
 
 Something new I have no played with before is the more abstract ways of initialization.
-This tutorial uses "uniform" and "designated" initialization.
+This tutorial says they use "uniform" and "designated" initialization.
 
 While the name they use is "uniform" the actual output of it isn't so uniform.
-It would seem that:
+What they're actually doing is called aggregate initialization. There is no
+uniformity about it.
 
+- [cppreference: Aggregate Initialization](https://en.cppreference.com/cpp/language/aggregate_initialization)
 - [cppreference: List Initialization](https://en.cppreference.com/cpp/language/list_initialization)
 
-### 8.7 C++ Narrowing
+### 9.2 C++ Narrowing
 
-Also I'm new to "narrowing". The process of the compiler without warning auto
+I'm new to "narrowing". The process of the compiler without warning auto
 converting values to fit inside the expected types. Like float to int, by
 truncation. By wrapping your initializations in curly brackets you stop this
 and force the compiler to spit out errors.
 
 ```cpp
-// Assume Point has: int x, y, x;
+// Assume Point has: int x, y, z;
+// Assume Point has no constructor.
 
-Point P(1,2.9); // Narrowing allowed -> P = (1,2)
-Point P{1,2.9}; // ERROR narrowing not allowed
+Point P(1, 2.9); // Narrowing allowed -> P = (1,2, z=garbage)
+Point P{1, 2.9}; // ERROR narrowing not allowed
 
-Point P(1,2); // z = whatever is in memory there. Default init
-Point P{1,2}; // z = 0; The memory gets zeroed out.
+Point P(1, 2); // -> {1, 2, garbage} z is not initialized, so whatever is in memory.
+Point P{1, 2}; // -> {1, 2, 0} z gets zero'ed in memory.
+
+std::vector<int> a(3, 1); // [1, 1, 1]
+std::vector<int> b{3, 1}; // [3, 1]
+```
+
+- [Clang: bugprone-narrowing-conversions](https://clang.llvm.org/extra/clang-tidy/checks/bugprone/narrowing-conversions.html)
+
+### 9.3 C++ Overload resolution and initializer_list
+
+I found learned about initializer_list and overload resolution. When using
+braces the compiler looks at the initializer_list constructor first and strongly
+prefers it.
+
+How initializer_list works is that the compiler builds a hidden const array holding
+the values and gives the constructor a small object that contains a pointer to
+the array and the length of the array.
+
+The purpose of doing this was because before c++11 you could only give braced lists
+to structs or arrays, not to classes.
+
+```cpp
+class MyClass {
+  public:
+    MyClass(int x, int y) { std::cout << "Hello"};
+    MyClass(std::initializer_list<int>) {std::cout << "World"};
+};
+
+MyClass(1, 2);      // Hello -> int x, y = 1, 2
+MyClass{1, 2};      // World -> [1, 2]
+MyClass{1, 2, 3, 4} // World -> [1, 2, 3, 4]
 ```
 
 - [C++ Core Guidelines: Initializer Syntax](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#es23-prefer-the--initializer-syntax)
-- [Clang: bugprone-narrowing-conversions](https://clang.llvm.org/extra/clang-tidy/checks/bugprone/narrowing-conversions.html)
 
 ## References
 
