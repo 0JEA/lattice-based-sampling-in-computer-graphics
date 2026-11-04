@@ -515,13 +515,6 @@ use. This are the best exceptions I've seen to date.
 Simply something like supplying a null pointer to a function that expects a specific
 object throws a detailed error.
 
-### 8.5 Some bugs in the tutorial
-
-In section 2.21 they quite strongly argue for different types of initializations
-for the different vulkan objects, they say some terms that are incorrect.
-
-See [9.1 C++ initialization types](#91-c-initialization-types)
-
 ```Terminal Output
 ERROR: VUID-vkAllocateCommandBuffers-pAllocateInfo-parameter
 --> vkAllocateCommandBuffers(): pAllocateInfo is NULL.
@@ -530,6 +523,21 @@ The Vulkan spec states: pAllocateInfo must be a valid pointer to a valid VkComma
 
 There are a plethora of plugins/layers of the API that can be enabled for additional
 features such as debugging, but for now I'm not doing anything extra.
+
+### 8.4.1 GPU & Storage without CPU.
+
+It's possible to allow devices to talk directly to the GPU rather than interfacing thrugh the CPU using things like the [Nvidia: GPIDirect API](https://developer.nvidia.com/gpudirect) or the direct storage API allowing things like NVME's to talk directly with the GPU.
+
+The is beneficial because of the data transfer limits that are solved with newer GPU architechture. I know even for myself my NVME can't run at full speed because of the limitations of my CPU, allowing it to interface with the GPU could allow for magnitudes of speed increases.
+
+This is a major factor in the core design of the Vulkan API.
+
+### 8.5 Some bugs in the tutorial
+
+In section 2.21 they quite strongly argue for different types of initializations
+for the different vulkan objects, they say some terms that are incorrect.
+
+See [9.1 C++ initialization types](#91-c-initialization-types)
 
 ## 9.0 C++ Intricacies
 
