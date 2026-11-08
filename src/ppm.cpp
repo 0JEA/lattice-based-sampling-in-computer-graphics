@@ -1,18 +1,18 @@
 #include "ppm.h"
 
-bool file_create_ppm(const std::string &filename, const image &picture) {
+bool file_create_ppm(const std::string &filename, const ppm &picture) {
 
-  std::ofstream ppm(filename + FILE_EXTENSION);
+  std::ofstream ppm_file(filename + FILE_EXTENSION);
 
-  if (ppm.is_open()) {
-    ppm << "P3\n"
-        << picture.width << ' ' << picture.height << "\n"
+  if (ppm_file.is_open()) {
+    ppm_file << "P3\n"
+        << picture.pixel_columns << ' ' << picture.pixel_rows << "\n"
         << MAX_RGB << "\n";
     for (const color& pixel : picture.pixels) {
-      write_color(ppm, pixel[0], pixel[1], pixel[2]);
+      write_color(ppm_file, pixel[0], pixel[1], pixel[2]);
     }
   } else {
-    std::cerr << MSG_ERROR << filename + FILE_EXTENSION;
+    std::cerr << MSG_ERROR << filename + FILE_EXTENSION + '\n';
     return false;
   }
 

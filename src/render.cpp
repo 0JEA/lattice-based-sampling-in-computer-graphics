@@ -1,6 +1,5 @@
 #include "camera.h"
 #include "color.h"
-#include "image.h"
 #include "input.h"
 #include "ppm.h"
 #include "ray.h"
@@ -86,14 +85,16 @@ color ray_color(const ray &r, const std::vector<object *> &scene) {
   return emerald;
 }
 
-image render(const camera &cam, const std::vector<object *> &scene,
-             int grid = 1) {
-  image picture{cam.get_resolution_width(), cam.get_resolution_height(), {}};
-  picture.pixels.reserve(picture.width * picture.height);
+ppm render(const camera &cam, const std::vector<object *> &scene, int grid = 1) {
+  ppm picture{.pixel_columns = cam.get_resolution_width(),
+              .pixel_rows = cam.get_resolution_height(),
+              .pixels = {}};
+
+  picture.pixels.reserve(picture.pixel_columns * picture.pixel_rows);
   // INFO: Reserve is just to allocate the space for the vector.
 
-  for (int row = 0; row < picture.height; ++row) {
-    for (int column = 0; column < picture.width; ++column) {
+  for (int row = 0; row < picture.pixel_rows; ++row) {
+    for (int column = 0; column < picture.pixel_columns; ++column) {
       // picture.pixels.push_back(
       //     ray_color(cam.ray_through_pixel(column, row), scene));
 
@@ -143,7 +144,7 @@ int main() {
 
   // std::vector<object *> scene = {&red_ball, &violet_ball};
 
-  image picture = render(cam, scene, AA_GRID);
+  ppm picture = render(cam, scene, AA_GRID);
   if (!file_create_ppm(filename, picture)) {
     return 1;
   }
