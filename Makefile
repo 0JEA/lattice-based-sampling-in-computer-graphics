@@ -2,7 +2,7 @@ CXX      = g++
 CXXFLAGS = -std=c++20 -Wall -Wextra -MMD -MP
 
 BUILD  = build
-SHARED = $(BUILD)/ppm.o $(BUILD)/color.o $(BUILD)/vector.o
+SHARED = $(BUILD)/ppm.o $(BUILD)/vector.o
 
 all: $(BUILD)/create_ppm.exe $(BUILD)/render.exe
 

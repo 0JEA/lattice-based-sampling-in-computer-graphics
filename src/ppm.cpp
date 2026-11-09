@@ -1,19 +1,44 @@
 #include "ppm.h"
+#include <algorithm>
+#include <fstream>
 
-bool file_create_ppm(const std::string &filename, const ppm &picture) {
+color ppm::to_bytes(const color &linear) {
+  const float scale = MAX_RGB + 0.999f;
+  color bytes;
 
+  for (int i = 0; i < 3; i++) {
+    bytes[i] = int(scale * std::clamp(linear[i], 0.0f, 1.0f));
+  }
+
+  return bytes;
+}
+
+void ppm::write_header(std::ostream &output) {
+  output
+    << "P" << format << '\n'
+    << pixel_columns
+    << ' '
+    << pixel_rows << '\n'
+    << MAX_RGB << '\n';
+}
+
+void ppm::write_pixel(std::ostream &output, const color &pixel) {
+  output << int(pixel[0]) << ' ' << int(pixel[1]) << ' ' << int(pixel[2])
+         << '\n';
+}
+
+bool ppm::write_file() {
   std::ofstream ppm_file(filename + FILE_EXTENSION);
 
-  if (ppm_file.is_open()) {
-    ppm_file << "P3\n"
-        << picture.pixel_columns << ' ' << picture.pixel_rows << "\n"
-        << MAX_RGB << "\n";
-    for (const color& pixel : picture.pixels) {
-      write_color(ppm_file, pixel[0], pixel[1], pixel[2]);
-    }
-  } else {
-    std::cerr << MSG_ERROR << filename + FILE_EXTENSION + '\n';
+  if (!ppm_file.is_open()) {
+    std::cerr << MSG_FILE_ERROR << filename + FILE_EXTENSION + '\n';
     return false;
+  }
+
+  write_header(ppm_file);
+
+  for (const color& pixel : pixels) {
+    write_pixel(ppm_file, to_bytes(pixel));
   }
 
   return true;

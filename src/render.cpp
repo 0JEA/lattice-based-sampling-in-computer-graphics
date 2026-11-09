@@ -1,5 +1,4 @@
 #include "camera.h"
-#include "color.h"
 #include "input.h"
 #include "ppm.h"
 #include "ray.h"
@@ -88,7 +87,8 @@ color ray_color(const ray &r, const std::vector<object *> &scene) {
 ppm render(const camera &cam, const std::vector<object *> &scene, int grid = 1) {
   ppm picture{.pixel_columns = cam.get_resolution_width(),
               .pixel_rows = cam.get_resolution_height(),
-              .pixels = {}};
+              .pixels = {},
+              .filename = {}};
 
   picture.pixels.reserve(picture.pixel_columns * picture.pixel_rows);
   // INFO: Reserve is just to allocate the space for the vector.
@@ -145,8 +145,9 @@ int main() {
   // std::vector<object *> scene = {&red_ball, &violet_ball};
 
   ppm picture = render(cam, scene, AA_GRID);
-  if (!file_create_ppm(filename, picture)) {
+  picture.filename = filename;
+  if (!picture.write_file()) {
     return 1;
   }
-  std::cout << MSG_FILECREATED + filename + FILE_EXTENSION << "\n";
+  std::cout << MSG_FILE_CREATED + filename + FILE_EXTENSION << "\n";
 }

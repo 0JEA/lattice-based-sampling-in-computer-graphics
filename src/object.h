@@ -1,7 +1,6 @@
 #ifndef OBJECT
 #define OBJECT
 
-#include "color.h"
 #include "vector.h"
 #include <string>
 
