@@ -129,6 +129,4 @@ private:
   static color to_bytes(const color &linear);
 };
 
-bool file_create_multi_ppm(const std::string &filename, const std::vector<ppm> &pictures);
-
 #endif
