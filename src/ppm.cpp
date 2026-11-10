@@ -43,3 +43,56 @@ bool ppm::write_file() {
 
   return true;
 }
+
+ppm ppm::combine_images(const ppm &image1, const ppm &image2,
+                        const direction orientation,
+                        const int border_thickness,
+                        const color border_color) {
+  ppm new_file = {
+    .pixel_columns = 0,
+    .pixel_rows = 0,
+    .pixels = {},
+    .filename = image1.filename
+  };
+
+  if (image1.pixel_columns != image2.pixel_columns) return new_file;
+  if (image1.pixel_rows != image2.pixel_rows) return new_file;
+
+  switch (orientation) {
+    case direction::horizontal:
+      new_file.pixel_columns =
+          image1.pixel_columns + border_thickness + image2.pixel_columns;
+      new_file.pixel_rows = image1.pixel_rows;
+      new_file.pixels.reserve(new_file.pixel_columns * new_file.pixel_rows);
+
+      for (int row = 0; row < new_file.pixel_rows; row++) {
+        int beginning_of_row = image1.pixel_columns * row;
+        int ending_of_row = beginning_of_row + image1.pixel_columns;
+
+        new_file.pixels.insert(new_file.pixels.end(),
+                               image1.pixels.begin() + beginning_of_row,
+                               image1.pixels.begin() + ending_of_row);
+        new_file.pixels.insert(new_file.pixels.end(), border_thickness,
+                               border_color);
+        new_file.pixels.insert(new_file.pixels.end(),
+                               image2.pixels.begin() + beginning_of_row,
+                               image2.pixels.begin() + ending_of_row);
+      }
+
+      return new_file;
+    case direction::vertical:
+      new_file.pixel_columns = image1.pixel_columns;
+      new_file.pixel_rows =
+          image1.pixel_rows + border_thickness + image2.pixel_rows;
+      new_file.pixels.insert(new_file.pixels.end(), image1.pixels.begin(),
+                             image1.pixels.end());
+      new_file.pixels.insert(new_file.pixels.end(),
+                             border_thickness * image1.pixel_columns,
+                             border_color);
+      new_file.pixels.insert(new_file.pixels.end(), image2.pixels.begin(),
+                             image2.pixels.end());
+      return new_file;
+  }
+
+  return new_file;
+}
