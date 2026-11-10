@@ -53,11 +53,45 @@ public:
   std::string filename;       ///< Output file name without `FILE_EXTENSION`.
 
   /**
+   * @brief How `combine_images` arranges its two images during layout.
+   */
+  enum class direction{
+    horizontal, ///< Side by side, `image1` on the left.
+    vertical    ///< Stacked, `image1` on the top.
+  };
+
+  /**
    * @brief Writes the image to `filename` + `FILE_EXTENSION` as plain P3.
    *
    * @return true on success, false if the file could not be opened.
    */
   bool write_file();
+
+  /**
+   * @brief Combines two `ppm` objects into a single `ppm`.
+   *
+   * Both given images must be the same size. If they are not, an empty
+   * (0x0) image is returned.
+   *
+   * @param image1 The first given `ppm` to join with the second.
+   * @param image2 The second given `ppm` to join with the first.
+   * @param orientation The orientation of the combined images.
+   * @param border_thickness Thickness of the border in pixels.
+   * @param border_color Color of the border that separates the two images.
+   * @return A `ppm` containing both given images separated by a border.
+   *
+   * @code
+   * // Assume image1 and image2 are valid PPM images of identical size.
+   * ppm horizontally_merged = ppm::combine_images(image1, image2);
+   * ppm vertically_merged = ppm::combine_images(image1, image2,
+   *                                             ppm::direction::vertical,
+   *                                             4, color(1, 0, 0));
+   * @endcode
+   */
+  static ppm combine_images(const ppm &image1, const ppm &image2,
+                            const direction orientation = direction::horizontal,
+                            const int border_thickness = 1,
+                            const color border_color = color(1, 1, 1));
 
 private:
   /**
@@ -94,7 +128,5 @@ private:
    */
   static color to_bytes(const color &linear);
 };
-
-bool file_create_multi_ppm(const std::string &filename, const std::vector<ppm> &pictures);
 
 #endif
