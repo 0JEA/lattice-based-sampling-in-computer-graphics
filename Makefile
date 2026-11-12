@@ -1,5 +1,5 @@
 CXX      = g++
-CXXFLAGS = -std=c++20 -Wall -Wextra -MMD -MP
+CXXFLAGS = -std=c++20 -Wall -Wextra -MMD -MP -O2 -march=native
 
 BUILD  = build
 SHARED = $(BUILD)/ppm.o $(BUILD)/vector.o
