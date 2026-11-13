@@ -1,618 +1,75 @@
-# Live Report.
+# Lattice-Based Sampling in Computer Graphics
 
-| **Course**      | AUCSC 395, Directed Study 1                                                                                                                            |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Institution** | University of Alberta, Augustana Campus                                                                                                                |
-| **Professor**   | [Dr. Thibaud Lutellier](https://apps.ualberta.ca/directory/person/lutellie) ([Google Scholar](https://scholar.google.com/citations?user=bQECG60AAAAJ)) |
-| **Student**     | Johnothan Andres                                                                                                                                       |
-| **Term**        | Fall 2026                                                                                                                                              |
-| **Date**        | September 18, 2026                                                                                                                                     |
+A ray tracer I'm writing from scratch in C++20 for a directed study at the University of Alberta, Augustana, supervised by [Dr. Thibaud Lutellier](https://apps.ualberta.ca/directory/person/lutellie). The plan is to turn it into a path tracer and measure how rank-1 lattice sampling compares to random and Sobol sampling.
 
-**Project:** Lattice-Based Sampling in Computer Graphics: Building a Renderer
+It's a learning project. I started it in September 2026 as my first rendering project, so the code grows one feature at a time, and every step is written up in the [report](REPORT.md).
 
----
+<p align="center">
+  <img src="renders/readme/soft_shadows.png" width="400" alt="Purple sphere above two small spheres on a pink floor, with soft shadows">
+  <img src="renders/readme/soft_shadow_wall.png" width="400" alt="Orange sphere in front of a green wall, casting a soft shadow">
+</p>
+<p align="center"><sub>Soft shadows from sphere-shaped lights, 16 shadow rays per hit point.</sub></p>
 
-## Contents
+## What works
 
-1. [PPM files (portable pixmaps)](#1-ppm-files-portable-pixmaps)
-2. [Quantizing Colors](#2-quantizing-colors)
-3. [The `inline` keyword in the `vec3` class](#3-the-inline-keyword-in-the-vec3-class)
-4. [Rays and Spheres](#4-rays-and-spheres)
-5. [Makefile and Folder Structuring](#5-makefile-and-folder-structuring)
-6. [My Claude Usage](#6-claude-usage-stat)
-7. [Handwritten Math Notes](#7-handwritten-math-notes)
-8. [Vulkan](#8-vulkan)
-9. [C++ Intricacies](#90-c-intricacies)
-10. [References](#references)
+- A camera with a position and a vertical field of view
+- Spheres, planes and rings
+- Point lights with distance falloff, plus ambient light
+- Soft shadows from sphere-shaped lights, using a grid of shadow rays spread over the light
+- Grid anti-aliasing, from 1×1 up to 16×16 rays per pixel
+- PPM output, and a helper that tiles several renders into one image
 
----
+## What I'm working on
 
-# 1. PPM files (portable pixmaps)
+- A Cornell box scene and random sampling, the first step toward a path tracer
+- Learning Vulkan through NVIDIA's [vk_mini_path_tracer](https://nvpro-samples.github.io/vk_mini_path_tracer/) tutorial, before porting this renderer to the GPU
 
-I have begun by using these files as directed in
-[_Ray Tracing in One Weekend_](https://raytracing.github.io/books/RayTracingInOneWeekend.html)
-to play with getting colour and shapes to render fast.
+## What's next
 
-As described in PPM's own man page, these are "egregiously inefficient",
-highly redundant, and not recommended for much real work. That said, they are
-very easy to write, read, and analyse, which funnily enough makes them a good
-starting point for learning.
+- [ ] Random bounces, to make it a real path tracer
+- [ ] Rank-1 lattice and Sobol samplers, so the same scene can be rendered with each
+- [ ] Measure each sampler's error against a high-sample reference render
+- [ ] Port it to the GPU with Vulkan
 
-### 1.1 The plain PPM format
+## Why sampling matters here
 
-I am starting with the "plain PPM" format. This is `P3`, the magic number that
-identifies the format in use. See `man 5 ppm` for the full specification.
+Every pixel and every soft shadow in this renderer is an average over a handful of rays, and where those rays go decides how clean the image is for the same amount of work. You can see the problem on the purple sphere above: every pixel uses the same 16 shadow rays, so the edge of the shadow comes out in steps instead of a smooth fade. Better sample placement is what this project is about.
 
-A good example of `P3` in use is _Ray Tracing in One Weekend_, chapter 2.1,
-figure 1. Each pixel is represented by a triplet of (red, green, blue):
+Anti-aliasing is the same idea one level up. Here is one edge at 1, 4, 16, 64 and 256 rays per pixel:
 
-```
-P3
-5 1
-255
-0 0 0
-63 0 0
-127 0 0
-191 0 0
-255 0 0
-```
+| 1×1 | 2×2 | 4×4 | 8×8 | 16×16 |
+| :-: | :-: | :-: | :-: | :-: |
+| <img src="renders/aa_zoom_off.png" width="128" alt="No anti-aliasing"> | <img src="renders/aa_zoom_2x2.png" width="128" alt="2x2 anti-aliasing"> | <img src="renders/aa_zoom_4x4.png" width="128" alt="4x4 anti-aliasing"> | <img src="renders/aa_zoom_8x8.png" width="128" alt="8x8 anti-aliasing"> | <img src="renders/aa_zoom_16x16.png" width="128" alt="16x16 anti-aliasing"> |
 
-### 1.2 `4_pixels.ppm`
+## Why lattices
 
-Manually made this:  
-![2x2](renders/ppm/4_pixels_output.png)
+Before this I spent summer 2026 on an NSERC USRA studying decryption failure in lattice-based post-quantum encryption (Learning With Errors, the problem behind NIST's ML-KEM). Rank-1 lattices use the same kind of structure for the opposite job. In cryptography the lattice hides a secret; in rendering it spreads sample points evenly so the image settles faster. How good a rank-1 lattice is for sampling comes down to the shortest vector in its dual lattice, which is the same kind of problem lattice cryptography depends on being hard.
 
-### 1.3 `5x1.ppm` & `1x5.ppm`
+## Build and run
 
-Made these with my `create_ppm.exe`  
-![5x1](renders/ppm/5x1_output.png)
-![1x5](renders/ppm/1x5_output.png)
-
-These two made me notice a bug in the [_Ray Tracing in One Weekend_](https://raytracing.github.io/books/RayTracingInOneWeekend.html) code section
-2.3 where if the row or column is 1 or less there is a division by zero.
-
-Obviously they're just giving quick examples, but it's fun to be running into bugs
-so early.
-
-Quick fix:
-
-```cpp
-double red = width > 1 ? double(column) / (width - 1) : 0;
-double green = height > 1 ? double(row) / (height - 1) : 0;
-```
-
-### 1.4 `30_pixels.ppm`
-
-Made this by hand:  
-![5x6](renders/ppm/30_pixels_output.png)
-
-### 1.5 `100x100.ppm`
-
-Made this with my `create_ppm.exe`
-![100x100](renders/ppm/100x100_output.png)
-
-### 1.6 Index of every test image
-
-![feh index](renders/ppm/ppm_outputs.png)
-
-This seems like a awesome way to show and compare many images so I'll likely be
-using this along the project.
-
-Produced with feh's full index mode:
+Needs `g++` with C++20 support and `make`.
 
 ```sh
-feh -m -I -e NotoSans-Medium/14 -x -W 550 *.ppm -o ppm_outputs.png
+make
+cd build && ./render.exe
 ```
 
-### 1.7 Viewing these locally
-
-See [`renders/ppm/how_to_view_ppm.txt`](renders/ppm/how_to_view_ppm.txt).
-In short: open the file with `feh`, press the up arrow to zoom in until
-individual pixels are visible, and press `SHIFT+A` to toggle anti-aliasing off
-if the pixels look like a smooth gradient instead of hard-edged blocks.
-
-## 2. Quantizing Colors
-
-- [Wikipedia: Quantization](<https://en.wikipedia.org/wiki/Quantization_(signal_processing)>)
-
-Every color we output now will be quantized to 8 bits per channel.  
-I still need to add in boundary checking for this, but I now understand what  
-this code now does. Even with a comment it didn't make any sense to me to start.
-
-```cpp
-void write_color(std::ostream &output, double red, double green, double blue) {
-  int red_byte = int(255.999 * red);
-  int green_byte = int(255.999 * green);
-  int blue_byte = int(255.999 * blue);
-
-  output << red_byte << ' ' << green_byte << ' ' << blue_byte << '\n';
-}
-```
-
-### 2.1 What an 8 bit channel is
-
-Every pixel's color is three numbers: how much red, green and blue. Each of
-those numbers is called a **channel**.
-
-A channel is stored as a whole number, and "8 bit" says how many bits it gets.
-With 8 bits there are $2^8 = 256$ possible values, so a channel can be any
-integer from $0$ (none of that color) to $255$ (all of it). Three channels gives
-$256^3 \approx 16.7$ million colors.
-
-Since I'm writing plain `P3`, the numbers are
-stored as text, so here "8 bit" describes how many levels a channel has, not how
-much space it takes on disk.
-
-### 2.2 Why not just work in 0 to 255
-
-The problem is that working with only integers makes blending colors, creating
-gradients and doing arithmetic on colors a pain. Multiplying two half-bright
-colors should give a quarter-bright one, but $127 \cdot 127 = 16129$, which
-means nothing.
-
-Thus we move to real numbers $\mathbb{R}$. But if red can be any
-$x \in \mathbb{R}$, it could be $400$ or $-30$, and neither makes sense as an
-amount of color. So each channel must be in the interval $[0, 1]$, where $0$ is
-none of that color and $1$ is all of it.
-
-Now multiplying two channels always gives another valid channel. If $a$ and
-$b$ are both in $[0, 1]$, then multiplying $b$ by $a$ can only shrink it or
-leave it the same, never grow it, because $a$ is at most $1$:
-
-$$
-0 \le a \cdot b \le b \le 1
-$$
-
-$$
-0.5 \cdot 0.5 = 0.25
-$$
-
-### 2.3 Converting back to 0 to 255
-
-The renderer works in $[0, 1]$, and only when writing the file
-does it convert to the 0 to 255 scale:
-
-$$
-\text{channel} = \lfloor 255.999 \cdot x \rfloor
-$$
-
-1. Multiply by $255.999$. This stretches $[0, 1]$ to $[0, 255.999]$.
-2. Floor round, which `int()` does by dropping the decimals.
-
-For example, half red: $255.999 \cdot 0.5 = 127.9995$, and `int()` will make it
-$127$.
-
-Why $255.999$ and not $255$ or $256$? Because step 2 always rounds down:
-
-- $256$ would split $[0, 1]$ into 256 equal slices, one per value, but $x = 1$
-  gives exactly $256$, which is out of range.
-- $255$ would only ever give $255$ when $x$ is exactly $1$, so the top value
-  almost never gets used.
-- $255.999$ keeps the slices nearly equal and still lands $x = 1$ on $255$.
-
----
-
-## 3. The `inline` keyword in the `vec3` class
-
-- [cppreference: `inline` specifier](https://en.cppreference.com/cpp/language/inline)
-
-While working through the examples given in chapter 3 of
-_Ray Tracing in One Weekend_, I came across the `vec3` class and its use of
-`inline`.
-
-`inline` is new to me, and seeing all of the definitions sitting inside the
-header file felt very wrong at first. My instinct was that definitions belong
-in a `.cpp` file, not a `.h` file.
-
-After some reading, I found there is a strong reason they did this.
-
-The idea is that functions like those on `vec3` get called extremely often in a
-renderer. Declaring them `inline` inside the header encourages the compiler to
-inline them at each call site, which can reduce runtime in a possibly
-substantial way.
-
-The utility functions in the example header look like this:
-
-```cpp
-inline vec3 operator+(const vec3 &u, const vec3 &v) {
-  return vec3(u.e[0] + v.e[0], u.e[1] + v.e[1], u.e[2] + v.e[2]);
-}
-
-inline double dot(const vec3 &u, const vec3 &v) {
-  return u.e[0] * v.e[0] + u.e[1] * v.e[1] + u.e[2] * v.e[2];
-}
-```
-
-I've likely overthought this, but I was almost convinced to keep using the
-inline keyword. Realistically tho I don't think I have the scale of a large
-project where this would make a noticeable impact I presume. So I wont be
-using it and later on if I have time after vulkan in implemented I can play
-with using inline and measure the gains.
-
-Regardless here's a reputable quote talking about it:
-
-> **F.5: If a function is very small and time-critical, declare it `inline`**
->
-> **Reason**
->
-> Some optimizers are good at inlining without hints from the programmer, but
-> don't rely on it. Measure! Over the last 40 years or so, we have been promised
-> compilers that can inline better than humans without hints from humans. We are
-> still waiting. Specifying `inline` (explicitly, or implicitly when writing
-> member functions inside a class definition) encourages the compiler to do a
-> better job.
-
-Source: [C++ Core Guidelines, F.5](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#f5-if-a-function-is-very-small-and-time-critical-declare-it-inline)
-
-# 4. Rays and Spheres
-
-### 4.1 A sphere at the origin
-
-A sphere centered at the origin of radius $r$ is:
-
-$$
-\begin{aligned}
-x^2 + y^2 + z^2 &= r^2 && \text{on the sphere's surface} \\
-x^2 + y^2 + z^2 &\lt r^2 && \text{inside the sphere} \\
-x^2 + y^2 + z^2 &\gt r^2 && \text{outside the sphere}
-\end{aligned}
-$$
-
-### 4.2 A sphere at any center
-
-To center the sphere at any point $(C_x, C_y, C_z)$:
-
-$$
-\begin{aligned}
-(C_x - x)^2 + (C_y - y)^2 + (C_z - z)^2 &= r^2 && \text{on the sphere's surface} \\
-(C_x - x)^2 + (C_y - y)^2 + (C_z - z)^2 &\lt r^2 && \text{inside the sphere} \\
-(C_x - x)^2 + (C_y - y)^2 + (C_z - z)^2 &\gt r^2 && \text{outside the sphere}
-\end{aligned}
-$$
-
-### 4.3 The same test with vectors
-
-Let
-
-$$
-\begin{aligned}
-\mathbf{C} &= (C_x, C_y, C_z) && \text{the center} \\
-\mathbf{P} &= (x, y, z) && \text{the selected point} \\
-\mathbf{M} &= \mathbf{P} - \mathbf{C} && \text{the movement vector, from center to point}
-\end{aligned}
-$$
-
-Now using dot:
-
-$$
-\boxed{\;
-\begin{aligned}
-\mathbf{M} \cdot \mathbf{M} &= r^2 && \text{on the sphere's surface} \\
-\mathbf{M} \cdot \mathbf{M} &\lt r^2 && \text{inside the sphere at some point } \mathbf{P} \\
-\mathbf{M} \cdot \mathbf{M} &\gt r^2 && \text{outside the sphere at some point } \mathbf{P}
-\end{aligned}
-\;}
-$$
-
-### 4.4 Rays
-
-Now we introduce a Ray, some Ray of light that travels in a straight linear
-line. It starts at an origin $\mathbf{R}$ and travels in a direction
-$\mathbf{d}$, which is the vector part.
-
-We can find any point along that line of light with a simple function:
-
-$$
-\boxed{\mathbf{P}(t) = \mathbf{R} + t\,\mathbf{d}}
-$$
-
-| Exmaple                                                                 | Code |
-| ----------------------------------------------------------------------- | ---- |
-| **Sky:** blends white to blue by how far up each ray points.            |
-| ![ray sky](renders/ray_sky.png)                                         |
-| **Floor:** a solid floor at $y = -1$, sky wherever a ray misses it.     |
-| ![ray floor solid](renders/ray_floor_solid.png)                         |
-| **Checkerboard:** the floor color flips every 1 unit along $x$ and $z$. |
-| ![ray floor checkerboard](renders/ray_floor.png)                        |
-
-### 4.5 Moving the camera and changing the lens
-
-All renders are 500x500, with the floor at $y = 0$ and a red row at $z = -5$.
-The originals are in [`renders/`](renders/).
-
-|                                       |                                       |                                               |
-| ------------------------------------- | ------------------------------------- | --------------------------------------------- |
-| ![2down](renders/2down.png)           | ![inthefloor](renders/inthefloor.png) | ![red_tile_at_-5](renders/red_tile_at_-5.png) |
-| below the floor                       | on the floor                          | just above the floor                          |
-| ![5up](renders/5up.png)               | ![30up](renders/30up.png)             | ![180](renders/180.png)                       |
-| 5 units up                            | 30 units up                           | 180° field of view                            |
-| ![130vertfov](renders/130vertfov.png) | ![80vertfov](renders/80vertfov.png)   | ![53fov](renders/53fov.png)                   |
-| 130° field of view                    | 80° field of view                     | 53° field of view                             |
-| ![40fov](renders/40fov.png)           | ![20fov](renders/20fov.png)           |                                               |
-| 40° field of view                     | 20° field of view                     |                                               |
-
-### 4.6 A ball, a bowl and a hoop
-
-|                     |                     |                     |
-| ------------------- | ------------------- | ------------------- |
-| ![a](renders/a.png) | ![b](renders/b.png) | ![c](renders/c.png) |
-| a                   | b                   | c                   |
-| ![d](renders/d.png) |                     |                     |
-| d                   |                     |                     |
-
----
-
-## 5. Makefile and Folder Structuring
-
-Now that the codebase is getting some size, I've moved to a Makefile and a
-proper folder layout. Compiling everything by hand with one long `g++` line was
-getting annoying, and `make` only rebuilds the files that actually changed.
-
-From what I can see, this is about the normal structure for a small C++
-project:
-
-```
-src/       .h and .cpp files together
-build/     .o files and the programs (gitignored)
-renders/   output images
-reports/
-```
-
-Build with `make`, run with `./build/camera_testing.exe`, and clean up with
-`make clean`.
-
-## 6. Claude Usage Stat.
-
-I'm not sure how well I'm using agents to learn, I try to be relatively concious
-about its usage, but over the last hour I've asked a lot of questions. Whether
-that helps my learning as much as not asking and just struggling with the topics
-I'm not sure. I thought I would share with you small usage stats over the last
-hour.
-
-**If you have any feedback please share.**
-
-| Topics                                                                                         | # of questions |
-| ---------------------------------------------------------------------------------------------- | -------------- |
-| C++ language (class/struct, invariants, private/const, static, .h/.cpp, helpers, float/double) | 11             |
-| The camera model (position, window, world, painting, moving things)                            | 9              |
-| Names, definitons, convensions, what values mean/translate too.                                | 7              |
-
-# 7. Handwritten Math Notes
-
-Worked through by hand on my iPad. Full PDF: [math-notes.pdf](notes/math-notes.pdf)
-
-### 7.1 Spheres, from circles to vectors
-
-![Spheres, from circles to vectors](notes/math-1.png)
-
-### 7.2 Ray-sphere intersection
-
-![Ray-sphere intersection](notes/math-2.png)
-
-### 7.3 Surface normals and lighting
-
-![Surface normals and lighting](notes/math-3.png)
-
-### 7.4 Review and local lighting
-
-![Review and local lighting](notes/math-4.png)
-
-### 7.5 Shadows and line of sight
-
-![Shadows and line of sight](notes/math-5.png)
-
-### 7.6 Lighting and shadows
-
-|                                                                 |                                                     |                                                         |
-| --------------------------------------------------------------- | --------------------------------------------------- | ------------------------------------------------------- |
-| ![light_directional](renders/light_directional.png)             | ![light_point](renders/light_point.png)             | ![light_shadows](renders/light_shadows.png)             |
-| directional light                                               | point light with falloff                            | point light with shadows                                |
-| ![light_directional_close](renders/light_directional_close.png) | ![light_point_close](renders/light_point_close.png) | ![light_shadows_close](renders/light_shadows_close.png) |
-| directional light, closer                                       | point light with falloff, closer                    | point light with shadows, closer                        |
-
-### 7.7 Antialiasing
-
-![Antialiasing](notes/math-6.png)
-
-|                                         |                                             |                                         |
-| --------------------------------------- | ------------------------------------------- | --------------------------------------- |
-| ![aa_zoom_off](renders/aa_zoom_off.png) | ![aa_zoom_2x2](renders/aa_zoom_2x2.png)     | ![aa_zoom_4x4](renders/aa_zoom_4x4.png) |
-| aa zoom off                             | aa zoom 2x2                                 | aa zoom 4x4                             |
-| ![aa_zoom_8x8](renders/aa_zoom_8x8.png) | ![aa_zoom_16x16](renders/aa_zoom_16x16.png) |                                         |
-| aa zoom 8x8                             | aa zoom 16x16                               |                                         |
-
-# 8. Vulkan
-
-### _**Software Requirements**_
-
-- Vulkan-capable GPU with ray tracing support (e.g. NVIDIA RTX) and current drivers
-- Vulkan SDK ≥ 1.3.261 (headers, loader, validation layers, glslang, shaderc)
-- CMake ≥ 3.5, a C++20 compiler, Ninja or Make, Git
-
-**Arch Linux:**
-
-```sh
-sudo pacman -S git cmake ninja gcc vulkan-headers vulkan-icd-loader \
-               vulkan-validation-layers glslang shaderc
-```
-
-**Other platforms:** install the [LunarG Vulkan SDK](https://vulkan.lunarg.com/sdk/home).
-
-**Setup:**
-
-```sh
-git clone https://github.com/nvpro-samples/nvpro_core.git
-git clone https://github.com/nvpro-samples/vk_mini_path_tracer.git
-cd vk_mini_path_tracer
-cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug
-cmake --build build
-```
-
-Both repos must be cloned into the same parent folder. Other libraries (GLFW,
-GLM, ImGui) come bundled inside `nvpro_core`.
-
-### 8.1 Terminology
-
-| Word                  | Meaning                                                                                                                                                                                                                                                                                                                   |
-| :-------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Vulkan                | A software API that allows interfacing directly with supported GPU's.                                                                                                                                                                                                                                                     |
-| Ray                   | A mathematical object $\text{over} \space \mathbb{R}^3$ Where a `direction D` is attached to a `point P`, such that you can control a variable `t` to find a point along the the ray. $\\ {R}(t)= P + tD, \text{where} \space t>=0$                                                                                       |
-| Ray Query             | A `Ray Query` is similar to the `Ray` I made for the CPU ray tracer. The difference is simply implementation and the fact its specific to the GPU. A `Ray Query` is just the intersection along the ray.                                                                                                                  |
-| Shader                | A program that uses/modifies data to visually transform data.                                                                                                                                                                                                                                                             |
-| Graphics Pipeline     | A concept of working with objects over rays. Taking each object, transforming it into verticies. Then many different types of "passes" happen, each with their own shaders to generate a final output. Object -> Verticies -> Shader Passes -> Resuling Pixel. Objects are not equations, but rather meshes of verticies. |
-| Ray Tracing Pipeline. | _Insert concise definition here._                                                                                                                                                                                                                                                                                         |
-| Compute Pipleine      | A single shader detailing how everything will like. Exactly like my CPU renderer.                                                                                                                                                                                                                                         |
-
-There are many more pipeline models, some of which are outlined in these sleek
-slides from AMD, I'm sure there's plenty more resources, but this is not the
-current focus.
-
-[AMD GPU Open: Graphics Pipeline Powerpoint](https://gpuopen.com/download/AMD_Graphics_pipeline_GIC2020.pdf)
-
-### 8.2 Direction
-
-I am following this Github repo I found: - [Github: Vulkan Mini Path Tracer](https://nvpro-samples.github.io/vk_mini_path_tracer/)
-They implement a `Compute Pipeline` "Ray" tracer just like I did with the CPU.
-
-It's become evident to me that there is a **much** bigger learning curve to Vulkan
-than what I could have ever imagined. Since Vulkan is simply an API there are
-many ways to use it and each is backed by years of research. For my own career
-it would benefit me greatly to continue my studies by next following this guide
-on the graphics pipeline. [VKGuide](https://vkguide.dev/)
-
-Any additional resources I find for Vulkan related things I'll throw below.
-Seemingly with how little time I've spent looking there is a wealth of dedicated
-people making tons of great resources.
-
-- [Matthieu Baty: GPU Programming with Vulkan](https://mbty.fr/blog/list)
-
-### 8.3 Inspiration
-
-In my searching I found reference to a man named Christoph Peters, he's noted
-on the front page of Vulkan's website. They were showcasing his blog.
-
-- [Christoph Peters - Moments in Graphics](https://momentsingraphics.de/index.html)
-
-This guy is basically the absolute role model for what I would love to have for
-a academic path. Having worked for both Intel & Nvidia, and now working at TU
-Delft in the Netherlands. Working now for the university as a Graphics Researcher
-with about 30 publications.
-
-I understand this is a needle in a haystack type of situation, but working for
-these companies and in this exact field, and now doing research just in graphics
-is an absolute dream for me. _**I'll aim high and dream :)**_
-
-### 8.4 Continuing the "Vulkan Mini Path Tracer"
-
-After getting ninja working and understanding it's just a fancy version of Make,
-the tutorial jumps into getting a first build working.
-
-Interesting things to note right off the start is that Vulkan has a lot of
-layers to its API. There are more base functionality like the validator that
-ensures all your usage meets the Vulkan specification and will throw errors on
-use. This are the best exceptions I've seen to date.
-
-Simply something like supplying a null pointer to a function that expects a specific
-object throws a detailed error.
-
-```Terminal Output
-ERROR: VUID-vkAllocateCommandBuffers-pAllocateInfo-parameter
---> vkAllocateCommandBuffers(): pAllocateInfo is NULL.
-The Vulkan spec states: pAllocateInfo must be a valid pointer to a valid VkCommandBufferAllocateInfo structure (https://docs.vulkan.org/spec/latest/chapters/cmdbuffers.html#VUID-vkAllocateCommandBuffers-pAllocateInfo-parameter)"
-```
-
-There are a plethora of plugins/layers of the API that can be enabled for additional
-features such as debugging, but for now I'm not doing anything extra.
-
-### 8.4.1 GPU & Storage without CPU.
-
-It's possible to allow devices to talk directly to the GPU rather than interfacing thrugh the CPU using things like the [Nvidia: GPIDirect API](https://developer.nvidia.com/gpudirect) or the direct storage API allowing things like NVME's to talk directly with the GPU.
-
-The is beneficial because of the data transfer limits that are solved with newer GPU architechture. I know even for myself my NVME can't run at full speed because of the limitations of my CPU, allowing it to interface with the GPU could allow for magnitudes of speed increases.
-
-This is a major factor in the core design of the Vulkan API.
-
-### 8.5 Some bugs in the tutorial
-
-In section 2.21 they quite strongly argue for different types of initializations
-for the different vulkan objects, they say some terms that are incorrect.
-
-See [9.1 C++ initialization types](#91-c-initialization-types)
-
-## 9.0 C++ Intricacies
-
-### 9.1 C++ initialization Types
-
-Something new I have no played with before is the more abstract ways of initialization.
-This tutorial says they use "uniform" and "designated" initialization.
-
-While the name they use is "uniform" the actual output of it isn't so uniform.
-What they're actually doing is called aggregate initialization. There is no
-uniformity about it.
-
-- [cppreference: Aggregate Initialization](https://en.cppreference.com/cpp/language/aggregate_initialization)
-- [cppreference: List Initialization](https://en.cppreference.com/cpp/language/list_initialization)
-
-### 9.2 C++ Narrowing
-
-I'm new to "narrowing". The process of the compiler without warning auto
-converting values to fit inside the expected types. Like float to int, by
-truncation. By wrapping your initializations in curly brackets you stop this
-and force the compiler to spit out errors.
-
-```cpp
-// Assume Point has: int x, y, z;
-// Assume Point has no constructor.
-
-Point P(1, 2.9); // Narrowing allowed -> P = (1,2, z=garbage)
-Point P{1, 2.9}; // ERROR narrowing not allowed
-
-Point P(1, 2); // -> {1, 2, garbage} z is not initialized, so whatever is in memory.
-Point P{1, 2}; // -> {1, 2, 0} z gets zero'ed in memory.
-
-std::vector<int> a(3, 1); // [1, 1, 1]
-std::vector<int> b{3, 1}; // [3, 1]
-```
-
-- [Clang: bugprone-narrowing-conversions](https://clang.llvm.org/extra/clang-tidy/checks/bugprone/narrowing-conversions.html)
-
-### 9.3 C++ Overload resolution and initializer_list
-
-I found learned about initializer_list and overload resolution. When using
-braces the compiler looks at the initializer_list constructor first and strongly
-prefers it.
-
-How initializer_list works is that the compiler builds a hidden const array holding
-the values and gives the constructor a small object that contains a pointer to
-the array and the length of the array.
-
-The purpose of doing this was because before c++11 you could only give braced lists
-to structs or arrays, not to classes.
-
-```cpp
-class MyClass {
-  public:
-    MyClass(int x, int y) { std::cout << "Hello"};
-    MyClass(std::initializer_list<int>) {std::cout << "World"};
-};
-
-MyClass(1, 2);      // Hello -> int x, y = 1, 2
-MyClass{1, 2};      // World -> [1, 2]
-MyClass{1, 2, 3, 4} // World -> [1, 2, 3, 4]
-```
-
-- [C++ Core Guidelines: Initializer Syntax](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#es23-prefer-the--initializer-syntax)
-
-## References
-
-- [_Ray Tracing in One Weekend_](https://raytracing.github.io/books/RayTracingInOneWeekend.html), chapters 2.1 and 3
-- [C++ Core Guidelines, F.5: If a function is very small and time-critical, declare it `inline`](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#f5-if-a-function-is-very-small-and-time-critical-declare-it-inline)
-- [cppreference: `inline` specifier](https://en.cppreference.com/cpp/language/inline)
-- `man 5 ppm`, the plain PPM (`P3`) specification
-- [Wikipedia: Sphere](https://en.wikipedia.org/wiki/Sphere)
-- [Wikipedia: Quantization](<https://en.wikipedia.org/wiki/Quantization_(signal_processing)>)
-- [Gnu: Make](https://www.gnu.org/software/make/manual/make.html)
-- [Christoph Peters - Moments in Graphics](https://momentsingraphics.de/index.html)
-- [Matthieu Baty: GPU Programming with Vulkan](https://mbty.fr/blog/list)
-- [VKGuide: A Vulkan Guide](https://vkguide.dev/)
-- [AMD GPU Open: Graphics Pipeline Powerpoint](https://gpuopen.com/download/AMD_Graphics_pipeline_GIC2020.pdf)
+`render.exe` renders the scenes set up in `src/render.cpp` and writes them as PPM files in the folder you run it from.
+
+## How the code is laid out
+
+| File | What it does |
+| --- | --- |
+| `src/vector.*` | The vector, point and color math everything else uses |
+| `src/ray.*` | Rays, `P + tD` |
+| `src/camera.*` | Turns a pixel into a ray, with position and field of view |
+| `src/sphere.*`, `src/plane.*`, `src/ring.*` | The objects, each with its own intersection test |
+| `src/ppm.*` | Writing images, and tiling several renders into one |
+| `src/render.cpp` | Shading, shadows, anti-aliasing and the scenes |
+| `src/create_ppm.cpp` | The first program I wrote for this, which just writes a PPM file |
+
+## Notes
+
+- [REPORT.md](REPORT.md): the running report for the course, with every step from writing the first PPM file to soft shadows and starting Vulkan.
+- [Handwritten math notes](notes/math-notes.pdf): ray-sphere intersection, surface normals, lighting, shadows and anti-aliasing, worked through by hand.
+- [Ray Tracing in One Weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html) was my starting guide.
