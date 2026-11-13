@@ -35,17 +35,19 @@ A ray tracer I'm writing from scratch in C++20 for a directed study at the Unive
 - [ ] Measure each sampler's error against a high-sample reference render
 - [ ] Port it to the GPU with Vulkan
 
-## Why sampling matters here
+## Sampling
 
-Every pixel and every soft shadow in this renderer is an average over a handful of rays, and where those rays go decides how clean the image is for the same amount of work. You can see the problem on the purple sphere above: every pixel uses the same 16 shadow rays, so the edge of the shadow comes out in steps instead of a smooth fade. Better sample placement is what this project is about.
+Soft shadows and anti-aliasing both come from firing several rays and averaging them. Where those rays go is what this project is about.
 
-Here is the Cornell box with 1, 4, 16 and 225 shadow rays per hit point (the first one also has no anti-aliasing). With one ray every shadow is hard, and as the rays spread over the light the shadows get the soft edges a real light gives:
+Shadow rays per hit point: 1, 4, 16 and 225 (the first one has no anti-aliasing).
 
 <p align="center">
   <img src="renders/readme/cornell_shadow_rays.png" alt="The Cornell box rendered four times, with shadows going from hard to soft">
 </p>
 
-Anti-aliasing is the same idea one level up. Here is one edge at 1, 4, 16, 64 and 256 rays per pixel:
+The purple sphere above uses 16 shadow rays on a fixed grid, so the edge of its shadow comes out in steps. Better sample placement should fix that.
+
+Anti-aliasing at 1, 4, 16, 64 and 256 rays per pixel:
 
 | 1×1 | 2×2 | 4×4 | 8×8 | 16×16 |
 | :-: | :-: | :-: | :-: | :-: |
