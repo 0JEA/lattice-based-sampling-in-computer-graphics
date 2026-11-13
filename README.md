@@ -5,6 +5,11 @@ A ray tracer I'm writing from scratch in C++20 for a directed study at the Unive
 It's a learning project. I started it in September 2026 as my first rendering project, so the code grows one feature at a time, and every step is written up in the [report](REPORT.md).
 
 <p align="center">
+  <img src="renders/readme/cornell_box.png" width="600" alt="Cornell box with a red left wall, green right wall and four spheres, lit by a light on the ceiling">
+</p>
+<p align="center"><sub>A Cornell box lit by a square light on the ceiling, with 8×8 anti-aliasing and 225 shadow rays per hit point.</sub></p>
+
+<p align="center">
   <img src="renders/readme/soft_shadows.png" width="400" alt="Purple sphere above two small spheres on a pink floor, with soft shadows">
   <img src="renders/readme/soft_shadow_wall.png" width="400" alt="Orange sphere in front of a green wall, casting a soft shadow">
 </p>
@@ -15,13 +20,14 @@ It's a learning project. I started it in September 2026 as my first rendering pr
 - A camera with a position and a vertical field of view
 - Spheres, planes and rings
 - Point lights with distance falloff, plus ambient light
-- Soft shadows from sphere-shaped lights, using a grid of shadow rays spread over the light
+- Soft shadows from sphere-shaped and square lights, using a grid of shadow rays spread over the light
+- A Cornell box scene
 - Grid anti-aliasing, from 1×1 up to 16×16 rays per pixel
 - PPM output, and a helper that tiles several renders into one image
 
 ## What I'm working on
 
-- A Cornell box scene and random sampling, the first step toward a path tracer
+- Random sampling, the first step toward a path tracer
 - Learning Vulkan through NVIDIA's [vk_mini_path_tracer](https://nvpro-samples.github.io/vk_mini_path_tracer/) tutorial, before porting this renderer to the GPU
 
 ## What's next
@@ -34,6 +40,12 @@ It's a learning project. I started it in September 2026 as my first rendering pr
 ## Why sampling matters here
 
 Every pixel and every soft shadow in this renderer is an average over a handful of rays, and where those rays go decides how clean the image is for the same amount of work. You can see the problem on the purple sphere above: every pixel uses the same 16 shadow rays, so the edge of the shadow comes out in steps instead of a smooth fade. Better sample placement is what this project is about.
+
+Here is the Cornell box with 1, 4, 16 and 225 shadow rays per hit point (the first one also has no anti-aliasing). With one ray every shadow is hard, and as the rays spread over the light the shadows get the soft edges a real light gives:
+
+<p align="center">
+  <img src="renders/readme/cornell_shadow_rays.png" alt="The Cornell box rendered four times, with shadows going from hard to soft">
+</p>
 
 Anti-aliasing is the same idea one level up. Here is one edge at 1, 4, 16, 64 and 256 rays per pixel:
 
