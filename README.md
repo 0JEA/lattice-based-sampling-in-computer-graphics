@@ -81,5 +81,4 @@ cd build && ./render.exe
 ## Notes
 
 - [REPORT.md](REPORT.md): the running report for the course, with every step from writing the first PPM file to soft shadows and starting Vulkan.
-- [Handwritten math notes](notes/math-notes.pdf): ray-sphere intersection, surface normals, lighting, shadows and anti-aliasing, worked through by hand.
 - [Ray Tracing in One Weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html) was my starting guide.
