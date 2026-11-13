@@ -45,8 +45,6 @@ Shadow rays per hit point: 1, 4, 16 and 225 (the first one has no anti-aliasing)
   <img src="renders/readme/cornell_shadow_rays.png" alt="The Cornell box rendered four times, with shadows going from hard to soft">
 </p>
 
-The purple sphere above uses 16 shadow rays on a fixed grid, so the edge of its shadow comes out in steps. Better sample placement should fix that.
-
 Anti-aliasing at 1, 4, 16, 64 and 256 rays per pixel:
 
 | 1×1 | 2×2 | 4×4 | 8×8 | 16×16 |
