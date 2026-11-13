@@ -2,8 +2,6 @@
 
 A ray tracer I'm writing from scratch in C++20 for a directed study at the University of Alberta, Augustana, supervised by [Dr. Thibaud Lutellier](https://apps.ualberta.ca/directory/person/lutellie). The plan is to turn it into a path tracer and measure how rank-1 lattice sampling compares to random and Sobol sampling.
 
-It's a learning project. I started it in September 2026 as my first rendering project, so the code grows one feature at a time, and every step is written up in the [report](REPORT.md).
-
 <p align="center">
   <img src="renders/readme/cornell_box.png" width="600" alt="Cornell box with a red left wall, green right wall and four spheres, lit by a light on the ceiling">
 </p>
