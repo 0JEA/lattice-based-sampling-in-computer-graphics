@@ -22,6 +22,8 @@ const color emerald = color(80, 200, 120) / 255;
 const color gunmetal = color(42, 52, 57) / 255;
 const color white = color(255, 255, 255) / 255;
 const color red = color(255, 0, 0) / 255;
+const color green = color(0, 255, 0) / 255;
+const color blue = color(0, 0, 255) / 255;
 const color violet = color(139, 92, 246) / 255;
 const color sky_blue = color(56, 189, 248) / 255;
 const color lapis_lazuli = color(38, 97, 156) / 255;
@@ -65,15 +67,23 @@ color shade(color base, vector n, point P, const ray &r,
       float height_fraction = (height_step + 0.5f) / samples_per_side;
       float around_fraction = (around_step + 0.5f) / samples_per_side;
 
-      float height = 1.0f - 2.0f * height_fraction;
-      float angle_around = 2.0f * PI * around_fraction;
-      float ring_radius = std::sqrt(1.0f - height * height);
+      // float height = 1.0f - 2.0f * height_fraction;
+      // float angle_around = 2.0f * PI * around_fraction;
+      // float ring_radius = std::sqrt(1.0f - height * height);
+      //
+      // point light_point =
+      //     active_scene.sun.position +
+      //     active_scene.sun.size * vector(ring_radius * std::cos(angle_around),
+      //                                    ring_radius * std::sin(angle_around),
+      //                                    height);
+      //
+      // if (samples_per_side == 1) light_point = active_scene.sun.position;
 
       point light_point =
           active_scene.sun.position +
-          active_scene.sun.size * vector(ring_radius * std::cos(angle_around),
-                                         ring_radius * std::sin(angle_around),
-                                         height);
+          active_scene.sun.size * vector(around_fraction - 0.5f,
+                                         0,
+                                         height_fraction - 0.5f);
 
       ray shadow{P, light_point - P};
       bool blocked = false;
@@ -170,6 +180,38 @@ ppm render(const camera &cam, scene &active_scene) {
   return picture;
 }
 
+ppm create_cornell_box(int x_resolution, int y_resolution){
+  camera centered_camera(x_resolution, y_resolution);
+  centered_camera.set_vertical_fov(60);
+  centered_camera.move_to(point(0, std::floor(15 / 2), 25));
+
+  plane floor      = plane(point(0, 0, 0), vector(0, 1, 0), white);
+  plane ceiling    = plane(point(0, 15, 0), vector(0,-1, 0), white);
+  plane back_wall  = plane(point(0, 0, -10), vector(0, 0, 1), white);
+  plane left_wall  = plane(point(-10, 0, 0), vector(1, 0, 0), red);
+  plane right_wall = plane(point(10, 0, 0), vector(-1, 0, 0), green);
+ 
+  sphere ball1  = sphere(4, point(-4, 4, -6), emerald);
+  sphere ball2  = sphere(2, point(3, 3, 7), pumpkin);
+  sphere ball3  = sphere(0.35, point(-2.1, 11.1, 1), violet);
+  sphere ball4  = sphere(1.1, point(5, 8, 1.5), lapis_lazuli);
+
+  light ceiling_light = {.position = point(0, 14.8, 3.5), .size = 8};
+
+  scene cornell_box = {.light_intensity = 120,
+                      .ambient_light = 0.08,
+                      .aa_grid = 8,
+                      .shadow_samples_per_side = 15,
+                      .objects = {&floor, &ceiling, &back_wall,
+                                  &left_wall, &right_wall,
+                                  &ball1, &ball2, &ball3, &ball4},
+                      .sun = {ceiling_light}};
+
+
+  ppm cornell_box_image = render(centered_camera, cornell_box);
+  return cornell_box_image;
+}
+
 int main() {
   std::cout << MSG_WELCOME << "\n";
 
@@ -185,12 +227,11 @@ int main() {
 
   camera camera2(200,200);
   camera2.move_to(vector(0,0,1.1));
+  camera2.set_vertical_fov(150);
 
   camera camera3(200, 200);
   camera3.move_to(vector(0, 0, 1.2));
   camera3.set_vertical_fov(120);
-
- camera2.set_vertical_fov(150);
 
   light light1 {.position = point( 3, -0.1,  2), .size = 0.5f};
   light light2 {.position = point(-3,  4,  2), .size = 1.0f};
@@ -237,11 +278,10 @@ int main() {
             .objects = {&floor4, &gunmetal_ball}, 
             .sun = {light4}};
 
-  ppm pic_red_ball = render(camera1, one);
-  ppm pic_violet_ball = render(camera3, two);
-  ppm pic_pumpkin_ball = render(camera1, three);
-  ppm pic_gunmetal_ball = render(camera2, four);
-
+  // ppm pic_red_ball = render(camera1, one);
+  // ppm pic_violet_ball = render(camera3, two);
+  // ppm pic_pumpkin_ball = render(camera1, three);
+  // ppm pic_gunmetal_ball = render(camera2, four);
 
   // Playing with 2D lines below.
   // point a = point(red_ball.origijjhh + red_ball.radius)
@@ -255,10 +295,14 @@ int main() {
   //   pic_red_ball.pixels[row * pic_red_ball.pixel_columns + column] = white;
   // }
 
-  ppm horizontal = ppm::combine_images(pic_red_ball, pic_pumpkin_ball);
-  ppm horizontal2 = ppm::combine_images(pic_violet_ball, pic_gunmetal_ball);
-  ppm list = ppm::combine_images(horizontal, horizontal2);
-
-  list.filename = "something";
-  list.write_file();
+  // ppm horizontal = ppm::combine_images(pic_red_ball, pic_pumpkin_ball);
+  // ppm horizontal2 = ppm::combine_images(pic_violet_ball, pic_gunmetal_ball);
+  // ppm list = ppm::combine_images(horizontal, horizontal2);
+  //
+  // list.filename = "something";
+  // list.write_file();
+  
+  ppm cornell = create_cornell_box(1000, 1000);
+  cornell.filename = "aa8_samples15_HD";
+  cornell.write_file();
 }
