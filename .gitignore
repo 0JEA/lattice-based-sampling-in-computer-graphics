@@ -3,3 +3,4 @@ build/
 
 cpp/
 ppm_exmaples/
+*.spv
